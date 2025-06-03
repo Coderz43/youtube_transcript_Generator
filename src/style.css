@@ -1,0 +1,278 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #1e1b2e, #16131f);
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+.header {
+  padding: 3rem 1rem 1rem 1rem;
+  text-align: center;
+  color: white;
+  background-color: transparent;
+}
+
+.header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #ff4ecd, #6e76ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.header p {
+  font-size: 1.2rem;
+  color: #cfcfcf;
+  margin-top: 0.5rem;
+}
+
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #222034;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+input[type="text"] {
+  width: 95%;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border: 2px solid #6e76ff;
+  border-radius: 10px;
+  background-color: #1c1a29;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+input::placeholder {
+  color: #aaa;
+}
+
+button {
+  padding: 14px 22px;
+  background: linear-gradient(to right, #ff4ecd, #6e76ff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.video-card {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  align-items: center;
+}
+
+.video-card img {
+  width: 180px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.video-info {
+  flex-grow: 1;
+}
+
+.video-info h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.video-info p {
+  color: #cfcfcf;
+  margin-top: 0.4rem;
+}
+
+.transcript {
+  background-color: #1f1c2e;
+  border: 1px solid #444;
+  padding: 1.2rem;
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  border-radius: 12px;
+  color: #e0e0e0;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* 👇 New Styling for How-To Section */
+.how-to-section {
+  max-width: 1100px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background-color: transparent;
+  text-align: center;
+}
+
+.how-to-section h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.cta-button {
+  padding: 12px 24px;
+  border: 2px solid #6e76ff;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 1rem;
+  border-radius: 30px;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  background: linear-gradient(to right, #ff4ecd, #6e76ff);
+  border-color: transparent;
+}
+
+.steps-grid {
+  display: flex;
+  justify-content: center; /* centers the cards horizontally */
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.step-card {
+  background: #2a243c;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.step-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: #6e76ff;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+.step-card img {
+  width: 500px;
+  height: 250px;
+  display: flex;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.step-card img:hover {
+  transform: scale(1.06);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+}
+.copy-button {
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #444;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #ffffff;
+  cursor: pointer;
+  border: 1px solid #666;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  background-color: #6e76ff;
+  border-color: #6e76ff;
+}
+
+.transcript-paragraphs {
+  margin-top: 1.5rem;
+  background: #1f1c2e;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #444;
+  max-height: 500px;
+  overflow-y: auto;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  color: #e0e0e0;
+}
+
+.transcript-paragraphs p {
+  margin: 0 0 1rem 0;
+}
+
+.transcript-paragraphs span {
+  font-weight: bold;
+  color: #9ca3af;
+  margin-right: 6px;
+}
+
+.thumbnail-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.youtube-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.youtube-overlay:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+}
+
+
+.video-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.meta-pill {
+  background-color: #33334d;
+  color: #ffffff;
+  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}

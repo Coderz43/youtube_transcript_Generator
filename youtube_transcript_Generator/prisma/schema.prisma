@@ -1,0 +1,102 @@
+// This is your Prisma schema file
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum UserPlan {
+  FREE
+  PRO_MONTHLY
+  PRO_YEARLY
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PaymentStatus {
+  COMPLETED
+  PENDING
+  FAILED
+}
+
+enum PaymentPlan {
+  MONTHLY
+  YEARLY
+}
+
+model User {
+  id          String      @id @default(cuid())
+  email       String      @unique
+  name        String
+  role        UserRole    @default(USER)
+  plan        UserPlan    @default(FREE)
+  status      UserStatus  @default(ACTIVE)
+  joinedAt    DateTime    @default(now())
+  freeAccess  Boolean     @default(false)
+  credits     Int         @default(0)
+  
+  // Relations
+  transcripts Transcript[]
+  payments    Payment[]
+
+  @@index([email])
+  @@index([status])
+  @@index([plan])
+}
+
+model Transcript {
+  id          String   @id @default(cuid())
+  videoId     String
+  channelId   String
+  category    String
+  duration    String
+  title       String
+  transcript  String   @db.Text
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  @@index([videoId])
+  @@index([userId])
+  @@index([channelId])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  amount    Decimal       @db.Decimal(10, 2)
+  plan      PaymentPlan
+  status    PaymentStatus
+  date      DateTime      @default(now())
+  
+  // Relations
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@index([userId])
+  @@index([status])
+  @@index([date])
+}
+
+model AdminSettings {
+  id                String   @id @default("settings")
+  defaultFreeCredits Int     @default(25)
+  paymentGateway    String   @default("stripe")
+  supportEmail      String
+  announcement      String?
+  updatedAt         DateTime @updatedAt
+
+  @@map("admin_settings")
+}
