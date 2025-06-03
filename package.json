@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
@@ -19,8 +22,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.22.2",
-    "tailwind-merge": "^2.2.1",
-    "youtube-transcript": "^1.0.6"
+    "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

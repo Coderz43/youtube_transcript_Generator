@@ -1,191 +1,742 @@
-import React, { useState } from 'react';
-import './style.css';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle } from 'lucide-react';
+import AdminRoutes from './pages/admin';
 
-const categoryMap: { [key: string]: string } = {
-  '1': 'Film & Animation', '2': 'Autos & Vehicles', '10': 'Music',
-  '15': 'Pets & Animals', '17': 'Sports', '18': 'Short Movies',
-  '19': 'Travel & Events', '20': 'Gaming', '21': 'Videoblogging',
-  '22': 'People & Blogs', '23': 'Comedy', '24': 'Entertainment',
-  '25': 'News & Politics', '26': 'Howto & Style', '27': 'Education',
-  '28': 'Science & Technology', '29': 'Nonprofits & Activism',
-  '30': 'Movies', '31': 'Anime/Animation', '32': 'Action/Adventure',
-  '33': 'Classics', '34': 'Comedy', '35': 'Documentary',
-  '36': 'Drama', '37': 'Family', '38': 'Foreign', '39': 'Horror',
-  '40': 'Sci-Fi/Fantasy', '41': 'Thriller', '42': 'Shorts',
-  '43': 'Shows', '44': 'Trailers'
-};
-
-const extractVideoId = (url: string): string | null => {
-  try {
-    const parsed = new URL(url);
-    const hostname = parsed.hostname;
-
-    if (hostname.includes("youtu.be")) {
-      return parsed.pathname.slice(1);
-    }
-
-    if (hostname.includes("youtube.com")) {
-      if (parsed.pathname.startsWith("/watch")) {
-        return parsed.searchParams.get("v");
-      } else if (parsed.pathname.startsWith("/shorts/")) {
-        return parsed.pathname.split("/shorts/")[1];
-      }
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-};
-
-function convertISODuration(duration: string): string {
-  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!match) return '';
-  const [, hours, minutes, seconds] = match.map((v) => parseInt(v || '0', 10));
-  const h = hours ? `${hours}h ` : '';
-  const m = minutes ? `${minutes}m ` : '';
-  const s = seconds ? `${seconds}s` : '';
-  return `${h}${m}${s}`.trim();
-}
-
-function App() {
+function MainLayout() {
   const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [transcript, setTranscript] = useState<string[] | null>(null);
-  const [title, setTitle] = useState('');
-  const [thumbnail, setThumbnail] = useState('');
   const [error, setError] = useState('');
-  const [channel, setChannel] = useState('');
-  const [channelId, setChannelId] = useState('');
-  const [videoId, setVideoId] = useState('');
-  const [category, setCategory] = useState('');
-  const [duration, setDuration] = useState('');
+  const [videoDetails, setVideoDetails] = useState<{
+    title: string;
+    thumbnail: string;
+    channel: string;
+    category: string;
+    duration: string;
+  } | null>(null);
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 'system';
+    }
+    return 'system';
+  });
 
-  const fetchVideoDetails = async (videoId: string) => {
-    const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
-    );
-    const data = await response.json();
-    const item = data.items[0];
+  useEffect(() => {
+    const handleThemeChange = () => {
+      if (currentTheme === 'system') {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.className = systemTheme;
+      } else {
+        document.documentElement.className = currentTheme;
+      }
+    };
 
-    if (item?.snippet && item?.contentDetails) {
-      setTitle(item.snippet.title);
-      setChannel(item.snippet.channelTitle);
-      setThumbnail(item.snippet.thumbnails.medium.url);
-      setChannelId(item.snippet.channelId);
-      setVideoId(videoId);
-      setCategory(categoryMap[item.snippet.categoryId] || 'Unknown');
-      setDuration(convertISODuration(item.contentDetails.duration));
+    handleThemeChange();
+    localStorage.setItem('theme', currentTheme);
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addListener(handleThemeChange);
+
+    return () => mediaQuery.removeListener(handleThemeChange);
+  }, [currentTheme]);
+
+  const extractVideoId = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname;
+
+      if (hostname.includes('youtu.be')) {
+        return urlObj.pathname.slice(1);
+      }
+
+      if (hostname.includes('youtube.com')) {
+        if (urlObj.pathname.startsWith('/watch')) {
+          return urlObj.searchParams.get('v');
+        } else if (urlObj.pathname.startsWith('/shorts/')) {
+          return urlObj.pathname.split('/shorts/')[1];
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
     }
   };
 
   const handleSubmit = async () => {
-    const id = extractVideoId(url);
-    if (!id) return setError('Invalid YouTube URL');
+    setLoading(true);
+    setError('');
+    setTranscript(null);
+    setVideoDetails(null);
+
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      setError('Invalid YouTube URL');
+      setLoading(false);
+      return;
+    }
 
     try {
-      await fetchVideoDetails(id);
-      const res = await fetch(`http://localhost:5000/api/transcript?video_id=${id}`);
-      const data = await res.json();
+      // Fetch video details
+      const detailsResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`);
+      const detailsData = await detailsResponse.json();
 
-      if (res.status !== 200) {
-        setTranscript(null);
-        setError(data.error || 'Failed to fetch transcript');
+      if (!detailsData.items?.length) {
+        setError('Video not found');
+        setLoading(false);
         return;
       }
 
-      const formatted = data.map((line: any) => {
-        const min = Math.floor(line.start / 60);
-        const sec = String(Math.floor(line.start % 60)).padStart(2, '0');
-        return `${min}:${sec} → ${line.text}`;
+      const item = detailsData.items[0];
+      setVideoDetails({
+        title: item.snippet.title,
+        thumbnail: item.snippet.thumbnails.medium.url,
+        channel: item.snippet.channelTitle,
+        category: item.snippet.categoryId,
+        duration: item.contentDetails.duration
       });
 
-      setTranscript(formatted);
-      setError('');
+      // Fetch transcript
+      const transcriptResponse = await fetch(`/api/transcript?videoId=${videoId}`);
+      const transcriptData = await transcriptResponse.json();
+
+      if (!transcriptResponse.ok) {
+        throw new Error(transcriptData.error || 'Failed to fetch transcript');
+      }
+
+      const formattedTranscript = transcriptData.map((line: any) => {
+        const minutes = Math.floor(line.start / 60);
+        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds} → ${line.text}`;
+      });
+
+      setTranscript(formattedTranscript);
     } catch (err) {
-      setError('Server error while fetching transcript');
-      setTranscript(null);
+      setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const themes = [
+    { id: 'light', label: 'Light', Icon: Sun },
+    { id: 'dark', label: 'Dark', Icon: Moon },
+    { id: 'system', label: 'System', Icon: Laptop2 }
+  ];
+
+  const sidebarItems = [
+    { 
+      icon: <Youtube className="w-5 h-5" />, 
+      label: "YouTube Transcript", 
+      description: "Extract transcripts from any YouTube video"
+    },
+    { 
+      icon: <History className="w-5 h-5" />, 
+      label: "Your History",
+      description: "View your transcript history" 
+    },
+    { 
+      icon: <PlaySquare className="w-5 h-5" />, 
+      label: "Channel Info", 
+      description: "Get channel information",
+      isNew: true 
+    },
+    { 
+      icon: <List className="w-5 h-5" />, 
+      label: "Extract From Playlist",
+      description: "Bulk extract from playlists" 
+    },
+    { 
+      icon: <Table className="w-5 h-5" />, 
+      label: "Extract From CSV",
+      description: "Import from CSV file" 
+    },
+    { 
+      icon: <Api className="w-5 h-5" />, 
+      label: "API",
+      description: "Access our API" 
+    }
+  ];
+
+  const faqItems = [
+    {
+      question: "What is YouTube Transcript?",
+      answer: "YouTube Transcript is a powerful tool that converts YouTube video content into text format. It helps you extract and read video transcripts without watching the entire video."
+    },
+    {
+      question: "How do I use YouTube Transcript?",
+      answer: "Simply paste the YouTube video URL in the input field and click 'Extract transcript'. Our tool will automatically generate the transcript for you in seconds."
+    },
+    {
+      question: "Is YouTube Transcript free to use?",
+      answer: "Yes! You can extract up to 25 transcripts per day completely free. No sign-up required for basic usage."
+    },
+    {
+      question: "Which languages are supported?",
+      answer: "We support over 100+ languages with automatic language detection. The tool can extract transcripts from videos with subtitles in any of these languages."
+    }
+  ];
+
   return (
-    <>
-      <div className="header">
-        <h1>YouTube Transcript Generator</h1>
-        <p>Paste any public YouTube link to get instant, timestamped transcripts.</p>
-      </div>
-
-      <div className="container">
-        <input
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Paste YouTube link here"
-        />
-        <button onClick={handleSubmit}>Get Transcript</button>
-
-        {error && <p style={{ color: 'red', marginTop: '1rem' }}>❌ {error}</p>}
-
-        {title && (
-          <div className="video-card">
-            <img src={thumbnail} alt="Thumbnail" />
-            <div className="video-info">
-              <h2>{title}</h2>
-              <p>{channel}</p>
-              <div className="video-meta">
-                <span className="meta-pill">{category}</span>
-                <span className="meta-pill">⏱ {duration}</span>
-                <span className="meta-pill">Video ID: <code>{videoId}</code></span>
-                <span className="meta-pill">Channel ID: <code>{channelId}</code></span>
+    <div className={`min-h-screen ${
+      currentTheme === 'light' 
+        ? 'bg-white text-gray-900' 
+        : 'bg-[#0f172a] text-white'
+    }`}>
+      {/* Top Navigation */}
+      <div className={`fixed top-0 left-0 right-0 z-50 ${
+        currentTheme === 'light'
+          ? 'bg-white/80'
+          : 'bg-[#0f172a]/80'
+      } backdrop-blur-lg border-b ${
+        currentTheme === 'light'
+          ? 'border-gray-200'
+          : 'border-white/10'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 py-2 flex justify-end items-center gap-6">
+          <a href="#" className={`${
+            currentTheme === 'light' 
+              ? 'text-gray-600 hover:text-gray-900' 
+              : 'text-gray-400 hover:text-white'
+          } text-sm font-medium transition-colors`}>
+            Pricing
+          </a>
+          <a href="#" className={`${
+            currentTheme === 'light' 
+              ? 'text-gray-600 hover:text-gray-900' 
+              : 'text-gray-400 hover:text-white'
+          } text-sm font-medium transition-colors`}>
+            API
+          </a>
+          <div className="relative">
+            <button
+              onClick={() => setIsBulkOpen(!isBulkOpen)}
+              className={`${
+                currentTheme === 'light' 
+                  ? 'text-gray-600 hover:text-gray-900' 
+                  : 'text-gray-400 hover:text-white'
+              } text-sm font-medium transition-colors flex items-center gap-1`}
+            >
+              Bulk
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {isBulkOpen && (
+              <div className={`absolute top-full right-0 mt-2 w-48 ${
+                currentTheme === 'light'
+                  ? 'bg-white/80 text-gray-900'
+                  : 'bg-white/10 text-white'
+              } backdrop-blur-lg rounded-lg shadow-lg py-2`}>
+                <a href="#" className={`block px-4 py-2 text-sm ${
+                  currentTheme === 'light'
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}>
+                  Extract from Playlist
+                </a>
+                <a href="#" className={`block px-4 py-2 text-sm ${
+                  currentTheme === 'light'
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}>
+                  Extract from CSV
+                </a>
               </div>
-            </div>
+            )}
           </div>
-        )}
-
-        {transcript && (
-          <div className="transcript-container">
-            <div className="copy-bar">
-              <button
-                className="copy-button"
-                onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
-              >
-                📋 Copy Transcript
-              </button>
-            </div>
-            <div className="transcript">
-              {transcript.map((line, i) => (
-                <p key={i}>{line}</p>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="how-to-section">
-        <h2>How to get the transcript of a YouTube video</h2>
-        <button className="cta-button">Get started</button>
-        <div className="steps-grid">
-          <div className="step-card">
-            <div className="step-number">1</div>
-            <div className="step-content">
-              <h3>Copy the YouTube URL</h3>
-              <p>
-                Copy the URL from the address bar of your web browser or right-click the video and
-                select "Copy Video URL".
-              </p>
-            </div>
-            <img src="https://images.pexels.com/photos/4348404/pexels-photo-4348404.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Copy Step" />
-          </div>
-          <div className="step-card">
-            <div className="step-number">2</div>
-            <div className="step-content">
-              <h3>Paste the URL above</h3>
-              <p>Simply paste the copied YouTube video URL above and click "Get Transcript".</p>
-            </div>
-            <img src="https://images.pexels.com/photos/4348401/pexels-photo-4348401.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Paste Step" />
+          <a 
+            href="#" 
+            className={`${
+              currentTheme === 'light' 
+                ? 'text-gray-600 hover:text-gray-900' 
+                : 'text-gray-400 hover:text-white'
+            } text-sm font-medium transition-colors flex items-center gap-1`}
+          >
+            <img src="/icons8-discord-24.png" alt="Discord" className="w-5 h-5" />
+            Join us on Discord
+          </a>
+          <div className="relative">
+            <button
+              onClick={() => setIsThemeOpen(!isThemeOpen)}
+              className={`${
+                currentTheme === 'light'
+                  ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              } transition-colors p-2 rounded-lg`}
+            >
+              {currentTheme === 'light' ? (
+                <Sun className="w-5 h-5" />
+              ) : currentTheme === 'dark' ? (
+                <Moon className="w-5 h-5" />
+              ) : (
+                <Laptop2 className="w-5 h-5" />
+              )}
+            </button>
+            {isThemeOpen && (
+              <div className={`absolute top-full right-0 mt-2 w-36 ${
+                currentTheme === 'light'
+                  ? 'bg-white/80 text-gray-900'
+                  : 'bg-white/10 text-white'
+              } backdrop-blur-lg rounded-lg shadow-lg py-2`}>
+                {themes.map((theme) => (
+                  <button
+                    key={theme.id}
+                    onClick={() => {
+                      setCurrentTheme(theme.id);
+                      setIsThemeOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${
+                      currentTheme === theme.id 
+                        ? currentTheme === 'light'
+                          ? 'text-gray-900 bg-gray-100'
+                          : 'text-white bg-white/10'
+                        : currentTheme === 'light'
+                          ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <theme.Icon className="w-4 h-4" />
+                    {theme.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </>
+
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-40 w-[60px] hover:w-[240px] ${
+        currentTheme === 'light'
+          ? 'bg-gray-100/80'
+          : 'bg-white/5'
+      } backdrop-blur-lg transition-all duration-300 ease-in-out group`}>
+        <div className="flex-1 p-3">
+          <nav>
+            <ul className="space-y-4">
+              {sidebarItems.map((item, index) => (
+                <li key={index}>
+                  <a 
+                    href="#" 
+                    className={`relative flex items-center gap-3 py-2 px-3 rounded-lg transition-colors ${
+                      index === 0 
+                        ? currentTheme === 'light'
+                          ? 'text-gray-900 font-semibold mb-6'
+                          : 'text-white font-semibold mb-6'
+                        : currentTheme === 'light'
+                          ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="relative group/tooltip">
+                      {item.icon}
+                      <div className={`absolute left-full ml-2 px-2 py-1 ${
+                        currentTheme === 'light'
+                          ? 'bg-gray-800 text-white'
+                          : 'bg-gray-800 text-white'
+                      } text-xs rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 whitespace-nowrap pointer-events-none`}>
+                        {item.description}
+                      </div>
+                    </div>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap overflow-hidden">
+                      {item.label}
+                      {item.isNew && (
+                        <span className="ml-2 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                          New
+                        </span>
+                      )}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+        
+        {/* Profile at bottom */}
+        <div className={`absolute bottom-0 left-0 right-0 p-3 border-t ${
+          currentTheme === 'light'
+            ? 'border-gray-200'
+            : 'border-white/10'
+        }`}>
+          <a 
+            href="#" 
+            className={`flex items-center gap-3 py-2 px-3 rounded-lg ${
+              currentTheme === 'light'
+                ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            } transition-colors`}
+          >
+            <div className="relative group/tooltip">
+              <UserCircle className="w-5 h-5" />
+              <div className={`absolute left-full ml-2 px-2 py-1 ${
+                currentTheme === 'light'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-800 text-white'
+              } text-xs rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 whitespace-nowrap pointer-events-none`}>
+                Manage your profile
+              </div>
+            </div>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              Profile
+            </span>
+          </a>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative ml-[60px]">
+        {/* Hero Section */}
+        <div className="max-w-7xl mx-auto px-4 pt-14">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <div className="flex-1 text-left">
+              <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400">★</span>
+                  ))}
+                </div>
+                Rated 4.6 out of 5 <span className={`${
+                  currentTheme === 'light' ? 'text-gray-500' : 'text-gray-500'
+                }`}>(Based on 5,287 reviews)</span>
+              </div>
+              
+              <h1 className="text-4xl lg:text-5xl font-bold mb-2">
+                Turn YouTube Videos into
+                <span className="block text-[#ff4571]">Transcripts Instantly</span>
+              </h1>
+              
+              <p className={`${
+                currentTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
+              } text-sm mb-4 max-w-xl`}>
+                Easily convert a youtube video to transcript, copy and download the generated youtube transcript in one click. Get started for free with 25 tokens.
+              </p>
+
+              <div className={`${
+                currentTheme === 'light'
+                  ? 'bg-gray-100'
+                  : 'bg-white/5'
+              } p-6 rounded-xl backdrop-blur-sm mb-6`}>
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="Paste your YouTube video link here"
+                  className={`w-full px-4 py-3 rounded-lg ${
+                    currentTheme === 'light'
+                      ? 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
+                      : 'bg-white/10 border-white/20 text-white placeholder-gray-400'
+                  } border focus:outline-none focus:ring-2 focus:ring-[#6e76ff] focus:border-transparent text-sm mb-4`}
+                />
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="flex-1 px-6 py-3 rounded-lg font-medium text-white bg-[#ff4571] hover:opacity-90 transition-all disabled:opacity-50 text-sm"
+                  >
+                    {loading ? 'Processing...' : 'Extract transcript'}
+                  </button>
+                  <button className={`px-6 py-3 rounded-lg font-medium ${
+                    currentTheme === 'light'
+                      ? 'text-gray-900 bg-white hover:bg-gray-50'
+                      : 'text-white bg-white/10 hover:bg-white/20'
+                  } transition-all text-sm`}>
+                    Extract in Bulk
+                    <span className="ml-2 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">New</span>
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="text-red-500 mb-4">
+                  ❌ {error}
+                </div>
+              )}
+
+              {videoDetails && (
+                <div className={`${
+                  currentTheme === 'light'
+                    ? 'bg-white'
+                    : 'bg-white/5'
+                } rounded-lg p-4 mb-4`}>
+                  <div className="flex gap-4">
+                    <img
+                      src={videoDetails.thumbnail}
+                      alt="Video thumbnail"
+                      className="w-48 rounded-lg"
+                    />
+                    <div>
+                      <h3 className="font-semibold mb-2">{videoDetails.title}</h3>
+                      <p className="text-sm text-gray-500">{videoDetails.channel}</p>
+                      <div className="mt-2 flex gap-2 flex-wrap">
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                          {videoDetails.category}
+                        </span>
+                        <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                          {videoDetails.duration}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {transcript && (
+                <div className={`${
+                  currentTheme === 'light'
+                    ? 'bg-white'
+                    : 'bg-white/5'
+                } rounded-lg p-4`}>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold">Transcript</h3>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
+                      className="text-sm px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    >
+                      Copy to Clipboard
+                    </button>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto space-y-2">
+                    {transcript.map((line, index) => (
+                      <p key={index} className="text-sm">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-8 text-xs text-gray-400 mt-6">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#ff4571]" />
+                  Scamadviser Verified
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#ff4571]" />
+                  Trusted by 563k+ users worldwide
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[#ff4571]" />
+                  SSL encrypted
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <img
+                src="/heroo.webp"
+                alt="Content Creator"
+                className="rounded-2xl w-full max-w-lg mx-auto object-cover"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Features Section */}
+        <div className={`${
+          currentTheme === 'light' ? 'bg-gray-50' : 'bg-white/5'
+        } border-y ${
+          currentTheme === 'light' ? 'border-gray-100' : 'border-white/10'
+        } mt-20`}>
+          <div className="max-w-7xl mx-auto px-4 py-20">
+            <h2 className="text-4xl font-bold text-center mb-4">Features</h2>
+            <p className={`text-center mb-16 max-w-2xl mx-auto ${
+              currentTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
+            }`}>
+              Everything You Need to Turn YouTube Videos into Actionable Content
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: <FileText className="w-6 h-6" />,
+                  title: "Free Extraction",
+                  description: "Extract up to 25 YouTube transcripts at no cost, no sign-ups required."
+                },
+                {
+                  icon: <Wand2 className="w-6 h-6" />,
+                  title: "Fast and Reliable",
+                  description: "Get accurate transcripts in seconds with our advanced processing."
+                },
+                {
+                  icon: <Languages className="w-6 h-6" />,
+                  title: "Multiple Languages",
+                  description: "Support for over 100+ languages with automatic detection."
+                }
+              ].map((feature, index) => (
+                <div key={index} className={`${
+                  currentTheme === 'light'
+                    ? 'bg-white shadow-lg'
+                    : 'bg-white/5'
+                } rounded-2xl p-8 backdrop-blur-sm border ${
+                  currentTheme === 'light' ? 'border-gray-100' : 'border-white/10'
+                }`}>
+                  <div className="text-[#ff4571] mb-6">{feature.icon}</div>
+                  <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
+                  <p className={`${
+                    currentTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
+                  }`}>{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Use Cases - Always Dark */}
+        <div className="bg-[#0f172a] text-white">
+          <div className="max-w-7xl mx-auto px-4 py-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4">Use Cases</h2>
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                See how different professionals leverage YouTube transcripts
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[
+                {
+                  icon: <Users className="w-6 h-6" />,
+                  title: "For Marketers & Businesses",
+                  features: ["Competitor Analysis", "Content Research", "SEO Optimization"]
+                },
+                {
+                  icon: <Mic2 className="w-6 h-6" />,
+                  title: "For Content Creators",
+                  features: ["Script Generation", "Content Repurposing", "Subtitle Creation"]
+                },
+                {
+                  icon: <BookOpen className="w-6 h-6" />,
+                  title: "For Writers & Journalists",
+                  features: ["Interview Transcription", "Quote Extraction", "Research"]
+                },
+                {
+                  icon: <GraduationCap className="w-6 h-6" />,
+                  title: "For Students & Researchers",
+                  features: ["Lecture Notes", "Research Material", "Study Aid"]
+                }
+              ].map((useCase, index) => (
+                <div key={index} className="bg-white/5 hover:bg-white/10 rounded-2xl p-8 backdrop-blur-sm border border-white/10 transition-colors">
+                  <div className="text-[#ff4571] mb-6">{useCase.icon}</div>
+                  <h3 className="text-xl font-semibold mb-4">{useCase.title}</h3>
+                  <ul className="space-y-3">
+                    {useCase.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#ff4571]" />
+                        <span className="text-gray-400">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className={`${
+          currentTheme === 'light' ? 'bg-gray-50' : 'bg-white/5'
+        } border-y ${
+          currentTheme === 'light' ? 'border-gray-100' : 'border-white/10'
+        }`}>
+          <div className="max-w-7xl mx-auto px-4 py-20">
+            <h2 className="text-4xl font-bold text-center mb-4">Frequently Asked Questions</h2>
+            <p className={`text-center mb-16 max-w-2xl mx-auto ${
+              currentTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
+            }`}>
+              Get answers to common questions about our YouTube transcript tool
+            </p>
+
+            <div className="max-w-3xl mx-auto space-y-4">
+              {faqItems.map((item, index) => (
+                <div 
+                  key={index}
+                  className={`${
+                    currentTheme === 'light'
+                      ? 'bg-white'
+                      : 'bg-white/5'
+                  } rounded-xl backdrop-blur-sm border ${
+                    currentTheme === 'light' ? 'border-gray-100' : 'border-white/10'
+                  } overflow-hidden`}
+                >
+                  <button
+                    onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                    className="w-full px-6 py-4 text-left flex justify-between items-center"
+                  >
+                    <span className="font-medium">{item.question}</span>
+                    <ChevronDown className={`w-5 h-5 transition-transform ${expandedFaq === index ? 'rotate-180' : ''}`} />
+                  </button>
+                  {expandedFaq === index && (
+                    <div className={`px-6 pb-4 ${
+                      currentTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
+                    }`}>
+                      {item.answer}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer - Always Dark */}
+        <footer className="bg-[#0f172a] text-white border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-4 py-20">
+            <div className="grid md:grid-cols-4 gap-12">
+              <div>
+                
+                <h3 className="font-bold text-xl mb-4">Resources</h3>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">API Reference</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support</a></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-bold text-xl mb-4">Legal</h3>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-bold text-xl mb-4">Company</h3>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-bold text-xl mb-4">Connect</h3>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Twitter</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Discord</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">GitHub</a></li>
+                </ul>
+              </div>
+            </div>
+            <div className="mt-20 pt-8 border-t border-white/10 text-gray-400 text-center">
+              <p>© 2025 YouTube Transcript Generator. All rights reserved.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/admin/*" element={<AdminRoutes />} />
+        <Route path="/*" element={<MainLayout />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
