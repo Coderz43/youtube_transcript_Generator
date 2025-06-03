@@ -64,7 +64,7 @@ function App() {
 
   const fetchVideoDetails = async (videoId: string) => {
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=YOUR_API_KEY`
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
     );
     const data = await response.json();
     const item = data.items[0];
@@ -86,7 +86,7 @@ function App() {
 
     try {
       await fetchVideoDetails(id);
-      const res = await fetch(`/api/transcript?videoId=${id}`);
+      const res = await fetch(`http://localhost:5000/api/transcript?video_id=${id}`);
       const data = await res.json();
 
       if (res.status !== 200) {
