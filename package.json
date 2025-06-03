@@ -11,7 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "api": "node src/api/transcript.ts"
+    "api": "ts-node src/api/transcript.ts"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
@@ -43,6 +43,7 @@
     "postcss": "^8.4.35",
     "prisma": "^5.10.2",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
