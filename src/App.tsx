@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import './style.css';
-import copyStepImg from './assets/images/copy-step.png';
-import pasteStepImg from './assets/images/paste-step.png';
 
 const categoryMap: { [key: string]: string } = {
   '1': 'Film & Animation', '2': 'Autos & Vehicles', '10': 'Music',
@@ -175,7 +173,7 @@ function App() {
                 select "Copy Video URL".
               </p>
             </div>
-            <img src={copyStepImg} alt="Copy Step" />
+            <img src="https://images.pexels.com/photos/4348404/pexels-photo-4348404.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Copy Step" />
           </div>
           <div className="step-card">
             <div className="step-number">2</div>
@@ -183,7 +181,7 @@ function App() {
               <h3>Paste the URL above</h3>
               <p>Simply paste the copied YouTube video URL above and click "Get Transcript".</p>
             </div>
-            <img src={pasteStepImg} alt="Paste Step" />
+            <img src="https://images.pexels.com/photos/4348401/pexels-photo-4348401.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Paste Step" />
           </div>
         </div>
       </div>
