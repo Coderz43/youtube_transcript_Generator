@@ -1,201 +1,193 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle } from 'lucide-react';
-import AdminRoutes from './pages/admin';
+import './style.css';
+import copyStepImg from './assets/images/copy-step.png';
+import pasteStepImg from './assets/images/paste-step.png';
 
-function MainLayout() {
+const categoryMap: { [key: string]: string } = {
+  '1': 'Film & Animation', '2': 'Autos & Vehicles', '10': 'Music',
+  '15': 'Pets & Animals', '17': 'Sports', '18': 'Short Movies',
+  '19': 'Travel & Events', '20': 'Gaming', '21': 'Videoblogging',
+  '22': 'People & Blogs', '23': 'Comedy', '24': 'Entertainment',
+  '25': 'News & Politics', '26': 'Howto & Style', '27': 'Education',
+  '28': 'Science & Technology', '29': 'Nonprofits & Activism',
+  '30': 'Movies', '31': 'Anime/Animation', '32': 'Action/Adventure',
+  '33': 'Classics', '34': 'Comedy', '35': 'Documentary',
+  '36': 'Drama', '37': 'Family', '38': 'Foreign', '39': 'Horror',
+  '40': 'Sci-Fi/Fantasy', '41': 'Thriller', '42': 'Shorts',
+  '43': 'Shows', '44': 'Trailers'
+};
+
+const extractVideoId = (url: string): string | null => {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname;
+
+    if (hostname.includes("youtu.be")) {
+      return parsed.pathname.slice(1);
+    }
+
+    if (hostname.includes("youtube.com")) {
+      if (parsed.pathname.startsWith("/watch")) {
+        return parsed.searchParams.get("v");
+      } else if (parsed.pathname.startsWith("/shorts/")) {
+        return parsed.pathname.split("/shorts/")[1];
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+function convertISODuration(duration: string): string {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return '';
+  const [, hours, minutes, seconds] = match.map((v) => parseInt(v || '0', 10));
+  const h = hours ? `${hours}h ` : '';
+  const m = minutes ? `${minutes}m ` : '';
+  const s = seconds ? `${seconds}s` : '';
+  return `${h}${m}${s}`.trim();
+}
+
+function App() {
   const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [transcript, setTranscript] = useState<any[]>([]);
-  const [videoDetails, setVideoDetails] = useState<{
-    title: string;
-    thumbnail: string;
-    channel: string;
-    channelId: string;
-    videoId: string;
-    category: string;
-    duration: string;
-  } | null>(null);
+  const [transcript, setTranscript] = useState<string[] | null>(null);
+  const [title, setTitle] = useState('');
+  const [thumbnail, setThumbnail] = useState('');
   const [error, setError] = useState('');
+  const [channel, setChannel] = useState('');
+  const [channelId, setChannelId] = useState('');
+  const [videoId, setVideoId] = useState('');
+  const [category, setCategory] = useState('');
+  const [duration, setDuration] = useState('');
 
-  const extractVideoId = (url: string): string | null => {
-    try {
-      const parsed = new URL(url);
-      const hostname = parsed.hostname;
+  const fetchVideoDetails = async (videoId: string) => {
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=YOUR_API_KEY`
+    );
+    const data = await response.json();
+    const item = data.items[0];
 
-      if (hostname.includes("youtu.be")) {
-        return parsed.pathname.slice(1);
-      }
-
-      if (hostname.includes("youtube.com")) {
-        if (parsed.pathname.startsWith("/watch")) {
-          return parsed.searchParams.get("v");
-        } else if (parsed.pathname.startsWith("/shorts/")) {
-          return parsed.pathname.split("/shorts/")[1];
-        }
-      }
-
-      return null;
-    } catch {
-      return null;
+    if (item?.snippet && item?.contentDetails) {
+      setTitle(item.snippet.title);
+      setChannel(item.snippet.channelTitle);
+      setThumbnail(item.snippet.thumbnails.medium.url);
+      setChannelId(item.snippet.channelId);
+      setVideoId(videoId);
+      setCategory(categoryMap[item.snippet.categoryId] || 'Unknown');
+      setDuration(convertISODuration(item.contentDetails.duration));
     }
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
-    setError('');
-    setTranscript([]);
-    setVideoDetails(null);
-
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-      setError('Invalid YouTube URL');
-      setLoading(false);
-      return;
-    }
+    const id = extractVideoId(url);
+    if (!id) return setError('Invalid YouTube URL');
 
     try {
-      // Fetch video details from YouTube API
-      const detailsResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=YOUR_API_KEY`
-      );
-      const detailsData = await detailsResponse.json();
+      await fetchVideoDetails(id);
+      const res = await fetch(`/api/transcript?videoId=${id}`);
+      const data = await res.json();
 
-      if (!detailsData.items?.length) {
-        setError('Video not found');
-        setLoading(false);
+      if (res.status !== 200) {
+        setTranscript(null);
+        setError(data.error || 'Failed to fetch transcript');
         return;
       }
 
-      const item = detailsData.items[0];
-      setVideoDetails({
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.medium.url,
-        channel: item.snippet.channelTitle,
-        channelId: item.snippet.channelId,
-        videoId: videoId,
-        category: item.snippet.categoryId,
-        duration: item.contentDetails.duration
+      const formatted = data.map((line: any) => {
+        const min = Math.floor(line.start / 60);
+        const sec = String(Math.floor(line.start % 60)).padStart(2, '0');
+        return `${min}:${sec} → ${line.text}`;
       });
 
-      // Fetch transcript
-      const transcriptResponse = await fetch(`/api/transcript?videoId=${videoId}`);
-      const transcriptData = await transcriptResponse.json();
-
-      if (!transcriptResponse.ok) {
-        throw new Error(transcriptData.error || 'Failed to fetch transcript');
-      }
-
-      setTranscript(transcriptData);
+      setTranscript(formatted);
+      setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
-    } finally {
-      setLoading(false);
+      setError('Server error while fetching transcript');
+      setTranscript(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-4">YouTube Transcript Generator</h1>
-          <p className="text-gray-400">Get instant, timestamped transcripts from any YouTube video</p>
-        </div>
+    <>
+      <div className="header">
+        <h1>YouTube Transcript Generator</h1>
+        <p>Paste any public YouTube link to get instant, timestamped transcripts.</p>
+      </div>
 
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste YouTube video URL here"
-              className="flex-1 px-4 py-2 bg-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50"
-            >
-              {loading ? 'Processing...' : 'Get Transcript'}
-            </button>
-          </div>
+      <div className="container">
+        <input
+          type="text"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="Paste YouTube link here"
+        />
+        <button onClick={handleSubmit}>Get Transcript</button>
 
-          {error && (
-            <div className="mt-4 text-red-400">
-              ❌ {error}
-            </div>
-          )}
-        </div>
+        {error && <p style={{ color: 'red', marginTop: '1rem' }}>❌ {error}</p>}
 
-        {videoDetails && (
-          <div className="bg-gray-800 rounded-lg p-6 mb-8">
-            <div className="flex gap-6">
-              <img
-                src={videoDetails.thumbnail}
-                alt="Video thumbnail"
-                className="w-48 rounded-lg"
-              />
-              <div>
-                <h2 className="text-xl font-semibold mb-2">{videoDetails.title}</h2>
-                <p className="text-gray-400 mb-4">{videoDetails.channel}</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                    Category: {videoDetails.category}
-                  </span>
-                  <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-                    Duration: {videoDetails.duration}
-                  </span>
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-                    Video ID: {videoDetails.videoId}
-                  </span>
-                </div>
+        {title && (
+          <div className="video-card">
+            <img src={thumbnail} alt="Thumbnail" />
+            <div className="video-info">
+              <h2>{title}</h2>
+              <p>{channel}</p>
+              <div className="video-meta">
+                <span className="meta-pill">{category}</span>
+                <span className="meta-pill">⏱ {duration}</span>
+                <span className="meta-pill">Video ID: <code>{videoId}</code></span>
+                <span className="meta-pill">Channel ID: <code>{channelId}</code></span>
               </div>
             </div>
           </div>
         )}
 
-        {transcript.length > 0 && (
-          <div className="bg-gray-800 rounded-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Transcript</h3>
+        {transcript && (
+          <div className="transcript-container">
+            <div className="copy-bar">
               <button
-                onClick={() => {
-                  const text = transcript
-                    .map(line => `${Math.floor(line.start / 60)}:${String(Math.floor(line.start % 60)).padStart(2, '0')} → ${line.text}`)
-                    .join('\n');
-                  navigator.clipboard.writeText(text);
-                }}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
+                className="copy-button"
+                onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
               >
-                Copy Transcript
+                📋 Copy Transcript
               </button>
             </div>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {transcript.map((line, index) => (
-                <p key={index} className="text-gray-300">
-                  <span className="text-gray-500">
-                    {Math.floor(line.start / 60)}:{String(Math.floor(line.start % 60)).padStart(2, '0')}
-                  </span>
-                  {' → '}
-                  {line.text}
-                </p>
+            <div className="transcript">
+              {transcript.map((line, i) => (
+                <p key={i}>{line}</p>
               ))}
             </div>
           </div>
         )}
       </div>
-    </div>
-  );
-}
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/admin/*" element={<AdminRoutes />} />
-        <Route path="/*" element={<MainLayout />} />
-      </Routes>
-    </BrowserRouter>
+      <div className="how-to-section">
+        <h2>How to get the transcript of a YouTube video</h2>
+        <button className="cta-button">Get started</button>
+        <div className="steps-grid">
+          <div className="step-card">
+            <div className="step-number">1</div>
+            <div className="step-content">
+              <h3>Copy the YouTube URL</h3>
+              <p>
+                Copy the URL from the address bar of your web browser or right-click the video and
+                select "Copy Video URL".
+              </p>
+            </div>
+            <img src={copyStepImg} alt="Copy Step" />
+          </div>
+          <div className="step-card">
+            <div className="step-number">2</div>
+            <div className="step-content">
+              <h3>Paste the URL above</h3>
+              <p>Simply paste the copied YouTube video URL above and click "Get Transcript".</p>
+            </div>
+            <img src={pasteStepImg} alt="Paste Step" />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
