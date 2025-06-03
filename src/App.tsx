@@ -498,17 +498,17 @@ function MainLayout() {
                         alt="Video thumbnail"
                         className="w-48 h-27 object-cover rounded-lg"
                       />
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-2">{videoDetails.title}</h3>
+                      <div className="flex-1 min-w-0"> {/* Added min-w-0 to prevent overflow */}
+                        <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
                         <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           <div className={`p-2 rounded-lg ${
                             currentTheme === 'light'
                               ? 'bg-gray-100'
                               : 'bg-white/10'
                           }`}>
                             <p className="text-xs text-gray-500">Video ID</p>
-                            <p className="text-sm font-mono">{videoDetails.videoId}</p>
+                            <p className="text-sm font-mono truncate">{videoDetails.videoId}</p>
                           </div>
                           <div className={`p-2 rounded-lg ${
                             currentTheme === 'light'
@@ -516,10 +516,10 @@ function MainLayout() {
                               : 'bg-white/10'
                           }`}>
                             <p className="text-xs text-gray-500">Channel ID</p>
-                            <p className="text-sm font-mono">{videoDetails.channelId}</p>
+                            <p className="text-sm font-mono truncate">{videoDetails.channelId}</p>
                           </div>
                         </div>
-                        <div className="flex gap-2 mt-2">
+                        <div className="flex flex-wrap gap-2 mt-2">
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             currentTheme === 'light'
                               ? 'bg-blue-100 text-blue-800'
@@ -666,6 +666,7 @@ function MainLayout() {
                 },
                 {
                   icon: <Mic2 className="w-6 h-6" />,
+                
                   title: "For Content Creators",
                   features: ["Script Generation", "Content Repurposing", "Subtitle Creation"]
                 },
