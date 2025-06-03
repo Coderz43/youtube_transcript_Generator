@@ -10,22 +10,28 @@
     "preview": "vite preview",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "api": "node src/api/transcript.ts"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
     "@prisma/client": "^5.10.2",
     "@tanstack/react-table": "^8.13.2",
     "clsx": "^2.1.0",
+    "cors": "^2.8.5",
     "date-fns": "^3.3.1",
+    "express": "^4.18.2",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.22.2",
-    "tailwind-merge": "^2.2.1"
+    "tailwind-merge": "^2.2.1",
+    "youtube-transcript": "^1.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
