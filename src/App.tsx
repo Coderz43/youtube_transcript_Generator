@@ -1,7 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle } from 'lucide-react';
+import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock } from 'lucide-react';
 import AdminRoutes from './pages/admin';
+
+const categoryMap: { [key: string]: string } = {
+  '1': 'Film & Animation', '2': 'Autos & Vehicles', '10': 'Music',
+  '15': 'Pets & Animals', '17': 'Sports', '18': 'Short Movies',
+  '19': 'Travel & Events', '20': 'Gaming', '21': 'Videoblogging',
+  '22': 'People & Blogs', '23': 'Comedy', '24': 'Entertainment',
+  '25': 'News & Politics', '26': 'Howto & Style', '27': 'Education',
+  '28': 'Science & Technology', '29': 'Nonprofits & Activism',
+  '30': 'Movies', '31': 'Anime/Animation', '32': 'Action/Adventure',
+  '33': 'Classics', '34': 'Comedy', '35': 'Documentary',
+  '36': 'Drama', '37': 'Family', '38': 'Foreign', '39': 'Horror',
+  '40': 'Sci-Fi/Fantasy', '41': 'Thriller', '42': 'Shorts',
+  '43': 'Shows', '44': 'Trailers'
+};
+
+function convertISODuration(duration: string): string {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return '';
+  const [, hours, minutes, seconds] = match.map(v => parseInt(v || '0', 10));
+  const parts = [];
+  if (hours) parts.push(`${hours}h`);
+  if (minutes) parts.push(`${minutes}m`);
+  if (seconds) parts.push(`${seconds}s`);
+  return parts.join(' ') || '0s';
+}
 
 function MainLayout() {
   const [url, setUrl] = useState('');
@@ -15,6 +40,8 @@ function MainLayout() {
     title: string;
     thumbnail: string;
     channel: string;
+    channelId: string;
+    videoId: string;
     category: string;
     duration: string;
   } | null>(null);
@@ -82,7 +109,9 @@ function MainLayout() {
 
     try {
       // Fetch video details
-      const detailsResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`);
+      const detailsResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
+      );
       const detailsData = await detailsResponse.json();
 
       if (!detailsData.items?.length) {
@@ -96,8 +125,10 @@ function MainLayout() {
         title: item.snippet.title,
         thumbnail: item.snippet.thumbnails.medium.url,
         channel: item.snippet.channelTitle,
-        category: item.snippet.categoryId,
-        duration: item.contentDetails.duration
+        channelId: item.snippet.channelId,
+        videoId: videoId,
+        category: categoryMap[item.snippet.categoryId] || 'Unknown',
+        duration: convertISODuration(item.contentDetails.duration)
       });
 
       // Fetch transcript
@@ -448,68 +479,99 @@ function MainLayout() {
                     <span className="ml-2 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">New</span>
                   </button>
                 </div>
-              </div>
 
-              {error && (
-                <div className="text-red-500 mb-4">
-                  ❌ {error}
-                </div>
-              )}
+                {error && (
+                  <div className="mt-4 text-red-500 text-sm">
+                    ❌ {error}
+                  </div>
+                )}
 
-              {videoDetails && (
-                <div className={`${
-                  currentTheme === 'light'
-                    ? 'bg-white'
-                    : 'bg-white/5'
-                } rounded-lg p-4 mb-4`}>
-                  <div className="flex gap-4">
-                    <img
-                      src={videoDetails.thumbnail}
-                      alt="Video thumbnail"
-                      className="w-48 rounded-lg"
-                    />
-                    <div>
-                      <h3 className="font-semibold mb-2">{videoDetails.title}</h3>
-                      <p className="text-sm text-gray-500">{videoDetails.channel}</p>
-                      <div className="mt-2 flex gap-2 flex-wrap">
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                          {videoDetails.category}
-                        </span>
-                        <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                          {videoDetails.duration}
-                        </span>
+                {videoDetails && (
+                  <div className={`mt-6 ${
+                    currentTheme === 'light'
+                      ? 'bg-white'
+                      : 'bg-white/5'
+                  } rounded-lg p-4`}>
+                    <div className="flex gap-4">
+                      <img
+                        src={videoDetails.thumbnail}
+                        alt="Video thumbnail"
+                        className="w-48 h-27 object-cover rounded-lg"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-semibold mb-2">{videoDetails.title}</h3>
+                        <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className={`p-2 rounded-lg ${
+                            currentTheme === 'light'
+                              ? 'bg-gray-100'
+                              : 'bg-white/10'
+                          }`}>
+                            <p className="text-xs text-gray-500">Video ID</p>
+                            <p className="text-sm font-mono">{videoDetails.videoId}</p>
+                          </div>
+                          <div className={`p-2 rounded-lg ${
+                            currentTheme === 'light'
+                              ? 'bg-gray-100'
+                              : 'bg-white/10'
+                          }`}>
+                            <p className="text-xs text-gray-500">Channel ID</p>
+                            <p className="text-sm font-mono">{videoDetails.channelId}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            currentTheme === 'light'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-blue-500/20 text-blue-400'
+                          }`}>
+                            {videoDetails.category}
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
+                            currentTheme === 'light'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-green-500/20 text-green-400'
+                          }`}>
+                            <Clock className="w-3 h-3" />
+                            {videoDetails.duration}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {transcript && (
-                <div className={`${
-                  currentTheme === 'light'
-                    ? 'bg-white'
-                    : 'bg-white/5'
-                } rounded-lg p-4`}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold">Transcript</h3>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
-                      className="text-sm px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                    >
-                      Copy to Clipboard
-                    </button>
+                {transcript && (
+                  <div className={`mt-6 ${
+                    currentTheme === 'light'
+                      ? 'bg-white'
+                      : 'bg-white/5'
+                  } rounded-lg p-4`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-semibold">Transcript</h3>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
+                        className="text-sm px-3 py-1 bg-[#6e76ff] text-white rounded-lg hover:bg-[#5a61cc] transition-colors"
+                      >
+                        Copy to Clipboard
+                      </button>
+                    </div>
+                    <div className={`max-h-96 overflow-y-auto space-y-2 ${
+                      currentTheme === 'light'
+                        ? 'bg-gray-50'
+                        : 'bg-white/5'
+                    } rounded-lg p-4`}>
+                      {transcript.map((line, index) => (
+                        <p key={index} className="text-sm">
+                          {line}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                  <div className="max-h-96 overflow-y-auto space-y-2">
-                    {transcript.map((line, index) => (
-                      <p key={index} className="text-sm">
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
 
-              <div className="flex items-center gap-8 text-xs text-gray-400 mt-6">
+              <div className="flex items-center gap-8 text-xs text-gray-400">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#ff4571]" />
                   Scamadviser Verified
@@ -686,7 +748,6 @@ function MainLayout() {
           <div className="max-w-7xl mx-auto px-4 py-20">
             <div className="grid md:grid-cols-4 gap-12">
               <div>
-                
                 <h3 className="font-bold text-xl mb-4">Resources</h3>
                 <ul className="space-y-2">
                   <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
@@ -741,3 +802,5 @@ function App() {
 }
 
 export default App;
+
+export default App
