@@ -9,6 +9,15 @@ function MainLayout() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [transcript, setTranscript] = useState<string[] | null>(null);
+  const [error, setError] = useState('');
+  const [videoDetails, setVideoDetails] = useState<{
+    title: string;
+    thumbnail: string;
+    channel: string;
+    category: string;
+    duration: string;
+  } | null>(null);
   const [currentTheme, setCurrentTheme] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') || 'system';
@@ -35,10 +44,82 @@ function MainLayout() {
     return () => mediaQuery.removeListener(handleThemeChange);
   }, [currentTheme]);
 
+  const extractVideoId = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname;
+
+      if (hostname.includes('youtu.be')) {
+        return urlObj.pathname.slice(1);
+      }
+
+      if (hostname.includes('youtube.com')) {
+        if (urlObj.pathname.startsWith('/watch')) {
+          return urlObj.searchParams.get('v');
+        } else if (urlObj.pathname.startsWith('/shorts/')) {
+          return urlObj.pathname.split('/shorts/')[1];
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setLoading(false);
+    setError('');
+    setTranscript(null);
+    setVideoDetails(null);
+
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      setError('Invalid YouTube URL');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Fetch video details
+      const detailsResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`);
+      const detailsData = await detailsResponse.json();
+
+      if (!detailsData.items?.length) {
+        setError('Video not found');
+        setLoading(false);
+        return;
+      }
+
+      const item = detailsData.items[0];
+      setVideoDetails({
+        title: item.snippet.title,
+        thumbnail: item.snippet.thumbnails.medium.url,
+        channel: item.snippet.channelTitle,
+        category: item.snippet.categoryId,
+        duration: item.contentDetails.duration
+      });
+
+      // Fetch transcript
+      const transcriptResponse = await fetch(`/api/transcript?videoId=${videoId}`);
+      const transcriptData = await transcriptResponse.json();
+
+      if (!transcriptResponse.ok) {
+        throw new Error(transcriptData.error || 'Failed to fetch transcript');
+      }
+
+      const formattedTranscript = transcriptData.map((line: any) => {
+        const minutes = Math.floor(line.start / 60);
+        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds} → ${line.text}`;
+      });
+
+      setTranscript(formattedTranscript);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const themes = [
@@ -369,7 +450,66 @@ function MainLayout() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-8 text-xs text-gray-400">
+              {error && (
+                <div className="text-red-500 mb-4">
+                  ❌ {error}
+                </div>
+              )}
+
+              {videoDetails && (
+                <div className={`${
+                  currentTheme === 'light'
+                    ? 'bg-white'
+                    : 'bg-white/5'
+                } rounded-lg p-4 mb-4`}>
+                  <div className="flex gap-4">
+                    <img
+                      src={videoDetails.thumbnail}
+                      alt="Video thumbnail"
+                      className="w-48 rounded-lg"
+                    />
+                    <div>
+                      <h3 className="font-semibold mb-2">{videoDetails.title}</h3>
+                      <p className="text-sm text-gray-500">{videoDetails.channel}</p>
+                      <div className="mt-2 flex gap-2 flex-wrap">
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                          {videoDetails.category}
+                        </span>
+                        <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                          {videoDetails.duration}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {transcript && (
+                <div className={`${
+                  currentTheme === 'light'
+                    ? 'bg-white'
+                    : 'bg-white/5'
+                } rounded-lg p-4`}>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold">Transcript</h3>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
+                      className="text-sm px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    >
+                      Copy to Clipboard
+                    </button>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto space-y-2">
+                    {transcript.map((line, index) => (
+                      <p key={index} className="text-sm">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-8 text-xs text-gray-400 mt-6">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#ff4571]" />
                   Scamadviser Verified
@@ -546,6 +686,7 @@ function MainLayout() {
           <div className="max-w-7xl mx-auto px-4 py-20">
             <div className="grid md:grid-cols-4 gap-12">
               <div>
+                
                 <h3 className="font-bold text-xl mb-4">Resources</h3>
                 <ul className="space-y-2">
                   <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
