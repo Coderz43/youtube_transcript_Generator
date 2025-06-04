@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock } from 'lucide-react';
+import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play } from 'lucide-react';
 import AdminRoutes from './pages/admin';
 import { useTheme } from './ThemeContext';
 
@@ -458,13 +458,32 @@ function MainLayout() {
                       : 'bg-white/5'
                   } rounded-lg p-4`}>
                     <div className="flex gap-4">
-                      <img
-                        src={videoDetails.thumbnail}
-                        alt="Video thumbnail"
-                        className="w-48 h-27 object-cover rounded-lg"
-                      />
+                      <div className="relative group cursor-pointer">
+                        <a 
+                          href={`https://www.youtube.com/watch?v=${videoDetails.videoId}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="block relative"
+                        >
+                          <img
+                            src={videoDetails.thumbnail}
+                            alt="Video thumbnail"
+                            className="w-48 h-27 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+                            <Play className="w-12 h-12 text-white" fill="white" />
+                          </div>
+                        </a>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
+                        <a 
+                          href={`https://www.youtube.com/watch?v=${videoDetails.videoId}`}
+                          target="_blank"
+                          rel="noopener noreferrer" 
+                          className="hover:text-[#ff4571] transition-colors"
+                        >
+                          <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
+                        </a>
                         <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           <div className={`p-2 rounded-lg ${
@@ -664,7 +683,6 @@ function MainLayout() {
                       ? 'bg-white'
                       : 'bg-white/5'
                   } rounded-xl backdrop-blur-sm border ${
-                    
                     theme === 'light' ? 'border-gray-100' : 'border-white/10'
                   } overflow-hidden`}
                 >
