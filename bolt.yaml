@@ -23,8 +23,8 @@ services:
 
   - name: backend
     type: api
-    project_path: ./backend
-    start_command: node index.js
+    project_path: .
+    start_command: npm run api
     proxy:
       path: /api
       target_port: 5000
