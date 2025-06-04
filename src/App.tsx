@@ -408,7 +408,7 @@ function MainLayout() {
               <p className={`${
                 theme === 'light' ? 'text-gray-600' : 'text-gray-400'
               } text-sm mb-4 max-w-xl`}>
-                Easily convert a youtube video to transcript, copy and download the generated youtube transcript in one click. Get started for free with 25 tokens.
+               Transform any YouTube video into accurate, time-stamped transcripts with just one click. Access professional-grade transcription services with your complimentary 25 credits today.
               </p>
 
               <div className={`${
