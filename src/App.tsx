@@ -1,5 +1,15 @@
-{Previous content remains unchanged until the hero section}
+import React from 'react';
+import { useTheme } from './ThemeContext';
 
+function App() {
+  const { currentTheme } = useTheme();
+
+  return (
+    <div className={currentTheme === 'light' ? 'bg-white' : 'bg-gray-900'}>
+      <div className="min-h-screen">
+        {/* Hero Section */}
+        <div className="max-w-7xl mx-auto px-4 py-20">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="flex-1">
               <img
                 src="/heroo.webp"
@@ -54,4 +64,9 @@
         </div>
 
         {/* Features Section */}
-{Rest of the file remains unchanged}
+      </div>
+    </div>
+  );
+}
+
+export default App;
