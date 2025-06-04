@@ -5,9 +5,10 @@ services:
     type: web
 
   - name: backend
-    project_path: .
-    start_command: python backend/app.py
+    project_path: ./backend
+    start_command: python app.py
     type: api
+    language: python
     proxy:
       path: /api
       target_port: 5000
