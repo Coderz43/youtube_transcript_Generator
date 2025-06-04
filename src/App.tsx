@@ -48,84 +48,88 @@ function MainLayout() {
     duration: string;
   } | null>(null);
 
-  return (
-    <div className="min-h-screen">
-      {videoDetails && (
-        <div className={`mt-6 ${
-          theme === 'light'
-            ? 'bg-white'
-            : 'bg-white/5'
-        } rounded-lg p-4`}>
-          <div className="flex gap-4">
-            <div className="relative group">
-              <button 
-                onClick={() => {
-                  window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
-                }}
-                className="block relative w-48 h-32 overflow-hidden rounded-lg"
-              >
-                <img
-                  src={videoDetails.thumbnail}
-                  alt="Video thumbnail"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/50 transition-all duration-300">
-                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                    <Play className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-              </button>
+  // ... rest of the original code remains exactly the same until the video details section ...
+
+  {videoDetails && (
+    <div className={`mt-6 ${
+      theme === 'light'
+        ? 'bg-white'
+        : 'bg-white/5'
+    } rounded-lg p-4`}>
+      <div className="flex gap-4">
+        <div className="relative group">
+          <button 
+            onClick={() => {
+              window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
+            }}
+            className="block relative w-48 h-32 overflow-hidden rounded-lg"
+          >
+            <img
+              src={videoDetails.thumbnail}
+              alt="Video thumbnail"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/50 transition-all duration-300">
+              <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                <Play className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <button
-                onClick={() => {
-                  window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
-                }}
-                className="block text-left hover:text-[#ff4571] transition-colors"
-              >
-                <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
-              </button>
-              <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className={`p-2 rounded-lg ${
-                  theme === 'light'
-                    ? 'bg-gray-100'
-                    : 'bg-white/10'
-                }`}>
-                  <p className="text-xs text-gray-500">Video ID</p>
-                  <p className="text-sm font-mono truncate">{videoDetails.videoId}</p>
-                </div>
-                <div className={`p-2 rounded-lg ${
-                  theme === 'light'
-                    ? 'bg-gray-100'
-                    : 'bg-white/10'
-                }`}>
-                  <p className="text-xs text-gray-500">Channel ID</p>
-                  <p className="text-sm font-mono truncate">{videoDetails.channelId}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  theme === 'light'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-blue-500/20 text-blue-400'
-                }`}>
-                  {videoDetails.category}
-                </span>
-                <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
-                  theme === 'light'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-green-500/20 text-green-400'
-                }`}>
-                  <Clock className="w-3 h-3" />
-                  {videoDetails.duration}
-                </span>
-              </div>
+          </button>
+        </div>
+        <div className="flex-1 min-w-0">
+          <button
+            onClick={() => {
+              window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
+            }}
+            className="block text-left hover:text-[#ff4571] transition-colors"
+          >
+            <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
+          </button>
+          <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className={`p-2 rounded-lg ${
+              theme === 'light'
+                ? 'bg-gray-100'
+                : 'bg-white/10'
+            }`}>
+              <p className="text-xs text-gray-500">Video ID</p>
+              <p className="text-sm font-mono truncate">{videoDetails.videoId}</p>
+            </div>
+            <div className={`p-2 rounded-lg ${
+              theme === 'light'
+                ? 'bg-gray-100'
+                : 'bg-white/10'
+            }`}>
+              <p className="text-xs text-gray-500">Channel ID</p>
+              <p className="text-sm font-mono truncate">{videoDetails.channelId}</p>
             </div>
           </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <span className={`text-xs px-2 py-1 rounded-full ${
+              theme === 'light'
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-blue-500/20 text-blue-400'
+            }`}>
+              {videoDetails.category}
+            </span>
+            <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
+              theme === 'light'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-green-500/20 text-green-400'
+            }`}>
+              <Clock className="w-3 h-3" />
+              {videoDetails.duration}
+            </span>
+          </div>
         </div>
-      )}
+      </div>
     </div>
+  )}
+
+  // ... rest of the original code remains exactly the same ...
+
+  return (
+    // ... rest of the original JSX remains exactly the same ...
   );
 }
 
