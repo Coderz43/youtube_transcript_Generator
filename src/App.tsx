@@ -565,21 +565,21 @@ function MainLayout() {
         {/* About Section */}
         <div className="max-w-7xl mx-auto px-4 py-20">
           <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex-1 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="flex-1">
+              <div className="grid grid-cols-2 gap-6">
                 <img
                   src="https://images.pexels.com/photos/3182833/pexels-photo-3182833.jpeg"
                   alt="Team collaboration"
-                  className="rounded-2xl w-full h-64 object-cover"
+                  className="rounded-2xl w-full h-48 object-cover shadow-lg transform hover:scale-105 transition-transform duration-300"
                 />
                 <img
                   src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg"
                   alt="Content creation"
-                  className="rounded-2xl w-full h-64 object-cover"
+                  className="rounded-2xl w-full h-48 mt-12 object-cover shadow-lg transform hover:scale-105 transition-transform duration-300"
                 />
               </div>
             </div>
-            <div className="flex-1 space-y-6">
+            <div className="flex-1 lg:pl-8 space-y-6">
               <span className="text-[#ff4571] font-semibold">About</span>
               <h2 className="text-4xl font-bold">Simplifying Transcripts for Creators and Professionals</h2>
               <p className={`${
@@ -664,6 +664,7 @@ function MainLayout() {
                       ? 'bg-white'
                       : 'bg-white/5'
                   } rounded-xl backdrop-blur-sm border ${
+                    
                     theme === 'light' ? 'border-gray-100' : 'border-white/10'
                   } overflow-hidden`}
                 >
