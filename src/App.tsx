@@ -95,61 +95,31 @@ function MainLayout() {
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
-    setError('');
-    setTranscript(null);
-    setVideoDetails(null);
-
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-      setError('Invalid YouTube URL');
-      setLoading(false);
-      return;
-    }
+    const id = extractVideoId(url);
+    if (!id) return setError('Invalid YouTube URL');
 
     try {
-      // Fetch video details
-      const detailsResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
-      );
-      const detailsData = await detailsResponse.json();
+      await fetchVideoDetails(id);
+      const res = await fetch(`/api/transcript?videoId=${id}`);
+      const data = await res.json();
 
-      if (!detailsData.items?.length) {
-        setError('Video not found');
-        setLoading(false);
+      if (res.status !== 200) {
+        setTranscript(null);
+        setError(data.error || 'Failed to fetch transcript');
         return;
       }
 
-      const item = detailsData.items[0];
-      setVideoDetails({
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.medium.url,
-        channel: item.snippet.channelTitle,
-        channelId: item.snippet.channelId,
-        videoId: videoId,
-        category: categoryMap[item.snippet.categoryId] || 'Unknown',
-        duration: convertISODuration(item.contentDetails.duration)
+      const formatted = data.map((line: any) => {
+        const min = Math.floor(line.start / 60);
+        const sec = String(Math.floor(line.start % 60)).padStart(2, '0');
+        return `${min}:${sec} → ${line.text}`;
       });
 
-      // Fetch transcript
-      const transcriptResponse = await fetch(`/api/transcript?videoId=${videoId}`);
-      const transcriptData = await transcriptResponse.json();
-
-      if (!transcriptResponse.ok) {
-        throw new Error(transcriptData.error || 'Failed to fetch transcript');
-      }
-
-      const formattedTranscript = transcriptData.map((line: any) => {
-        const minutes = Math.floor(line.start / 60);
-        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
-        return `${minutes}:${seconds} → ${line.text}`;
-      });
-
-      setTranscript(formattedTranscript);
+      setTranscript(formatted);
+      setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
-    } finally {
-      setLoading(false);
+      setError('Server error while fetching transcript');
+      setTranscript(null);
     }
   };
 
