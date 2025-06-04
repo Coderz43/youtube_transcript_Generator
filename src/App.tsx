@@ -48,17 +48,12 @@ function MainLayout() {
     duration: string;
   } | null>(null);
 
-  // ... (rest of the code remains exactly the same as in the original file)
-
   return (
     <div className={`min-h-screen ${
       theme === 'light' 
         ? 'bg-white text-gray-900' 
         : 'bg-[#0f172a] text-white'
     }`}>
-      {/* ... (previous navigation and layout code remains the same) */}
-      
-      {/* Updated Hero Section */}
       <div className="max-w-7xl mx-auto px-4 pt-14">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 text-left">
@@ -87,13 +82,9 @@ function MainLayout() {
                 <span className="text-gray-400">99.9% Accuracy</span>
               </div>
             </div>
-
-            {/* ... (rest of the component remains exactly the same) */}
           </div>
         </div>
       </div>
-      
-      {/* ... (rest of the layout remains exactly the same) */}
     </div>
   );
 }
@@ -110,5 +101,3 @@ function App() {
 }
 
 export default App;
-
-export default App
