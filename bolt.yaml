@@ -1,40 +1,13 @@
-name: youtube-transcript-generator
-description: A modern YouTube transcript generator with a beautiful UI
-type: app
-
 services:
   - name: frontend
-    type: web
     project_path: .
-    build_command: npm run build
     start_command: npm run dev
-    port: 5173
-    env:
-      - VITE_YOUTUBE_API_KEY
-      - VITE_SUPABASE_URL
-      - VITE_SUPABASE_ANON_KEY
-    dependencies:
-      - react
-      - react-dom
-      - react-router-dom
-      - lucide-react
-      - tailwindcss
-      - youtube-transcript
+    type: web
 
   - name: backend
-    type: api
     project_path: .
-    start_command: npm run api
+    start_command: python backend/app.py
+    type: api
     proxy:
       path: /api
       target_port: 5000
-    dependencies:
-      - express
-      - cors
-      - youtube-transcript
-
-routes:
-  - path: /
-    component: src/App.tsx
-  - path: /admin/*
-    component: src/pages/admin/index.tsx
