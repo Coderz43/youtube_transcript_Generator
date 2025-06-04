@@ -408,7 +408,7 @@ function MainLayout() {
               <p className={`${
                 theme === 'light' ? 'text-gray-600' : 'text-gray-400'
               } text-sm mb-4 max-w-xl`}>
-               Transform any YouTube video into accurate, time-stamped transcripts with just one click. Access professional-grade transcription services with your complimentary 25 credits today.
+                Transform any YouTube video into accurate, time-stamped transcripts in a single click. Start with 25 complimentary credits and experience professional-grade results instantly.
               </p>
 
               <div className={`${
@@ -427,6 +427,7 @@ function MainLayout() {
                       : 'bg-white/10 border-white/20 text-white placeholder-gray-400'
                   } border focus:outline-none focus:ring-2 focus:ring-[#6e76ff] focus:border-transparent text-sm mb-4`}
                 />
+                
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={handleSubmit}
@@ -435,6 +436,7 @@ function MainLayout() {
                   >
                     {loading ? 'Processing...' : 'Extract transcript'}
                   </button>
+                  
                   <button className={`px-6 py-3 rounded-lg font-medium ${
                     theme === 'light'
                       ? 'text-gray-900 bg-white hover:bg-gray-50'
@@ -458,33 +460,44 @@ function MainLayout() {
                       : 'bg-white/5'
                   } rounded-lg p-4`}>
                     <div className="flex gap-4">
-                      <div className="relative group">
-                        <button 
-                          onClick={() => {
-                            window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
-                          }}
-                          className="block relative w-48 h-32 overflow-hidden rounded-lg"
-                        >
-                          <img
-                            src={videoDetails.thumbnail}
-                            alt="Video thumbnail"
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                            <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center">
-                              <Play className="w-6 h-6 text-white fill-current" />
-                            </div>
+                      {/* Updated thumbnail with always-visible play button */}
+                      <div className="relative group w-48 h-32 overflow-hidden rounded-lg">
+                        <img
+                          src={videoDetails.thumbnail}
+                          alt="Video thumbnail"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition duration-300 group-hover:bg-black/50">
+                          <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center transform transition-transform duration-300 group-hover:scale-110 shadow-lg">
+                            <Play className="w-6 h-6 text-white fill-current" />
                           </div>
-                        </button>
+                        </div>
+                        <button
+                          onClick={() =>
+                            window.open(
+                              `https://www.youtube.com/watch?v=${videoDetails.videoId}`,
+                              '_blank'
+                            )
+                          }
+                          className="absolute inset-0 z-10"
+                          aria-label="Play on YouTube"
+                        />
                       </div>
+
+                      {/* Video details */}
                       <div className="flex-1 min-w-0">
                         <button
-                          onClick={() => {
-                            window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
-                          }}
+                          onClick={() =>
+                            window.open(
+                              `https://www.youtube.com/watch?v=${videoDetails.videoId}`,
+                              '_blank'
+                            )
+                          }
                           className="block text-left hover:text-[#ff4571] transition-colors"
                         >
-                          <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
+                          <h3 className="font-semibold mb-2 line-clamp-2">
+                            {videoDetails.title}
+                          </h3>
                         </button>
                         <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -526,49 +539,20 @@ function MainLayout() {
                     </div>
                   </div>
                 )}
-
-                {transcript && (
-                  <div className={`mt-6 ${
-                    theme === 'light'
-                      ? 'bg-white'
-                      : 'bg-white/5'
-                  } rounded-lg p-4`}>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-semibold">Transcript</h3>
-                      <button
-                        onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
-                        className="text-sm px-3 py-1 bg-[#6e76ff] text-white rounded-lg hover:bg-[#5a61cc] transition-colors"
-                      >
-                        Copy to Clipboard
-                      </button>
-                    </div>
-                    <div className={`max-h-96 overflow-y-auto space-y-2 ${
-                      theme === 'light'
-                        ? 'bg-gray-50'
-                        : 'bg-white/5'
-                    } rounded-lg p-4`}>
-                      {transcript.map((line, index) => (
-                        <p key={index} className="text-sm">
-                          {line}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="flex items-center gap-8 text-xs text-gray-400">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#ff4571]" />
-               Third-Party Security Verified (Scamadviser)
+                  Third-Party Security Verified (Scamadviser)
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#ff4571]" />
-                 Global Trust: 563,000+ Users and Growing
+                  Global Trust: 563,000+ Users and Growing
                 </div>
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-[#ff4571]" />
-               SSL Encryption Ensures Full Data Security
+                  SSL Encryption Ensures Full Data Security
                 </div>
               </div>
             </div>
