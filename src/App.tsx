@@ -458,32 +458,34 @@ function MainLayout() {
                       : 'bg-white/5'
                   } rounded-lg p-4`}>
                     <div className="flex gap-4">
-                      <div className="relative group cursor-pointer">
-                        <a 
-                          href={`https://www.youtube.com/watch?v=${videoDetails.videoId}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="block relative"
+                      <div className="relative group">
+                        <button 
+                          onClick={() => {
+                            window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
+                          }}
+                          className="block relative w-48 h-32 overflow-hidden rounded-lg"
                         >
                           <img
                             src={videoDetails.thumbnail}
                             alt="Video thumbnail"
-                            className="w-48 h-27 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
-                            <Play className="w-12 h-12 text-white" fill="white" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center">
+                              <Play className="w-6 h-6 text-white fill-current" />
+                            </div>
                           </div>
-                        </a>
+                        </button>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <a 
-                          href={`https://www.youtube.com/watch?v=${videoDetails.videoId}`}
-                          target="_blank"
-                          rel="noopener noreferrer" 
-                          className="hover:text-[#ff4571] transition-colors"
+                        <button
+                          onClick={() => {
+                            window.open(`https://www.youtube.com/watch?v=${videoDetails.videoId}`, '_blank');
+                          }}
+                          className="block text-left hover:text-[#ff4571] transition-colors"
                         >
                           <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
-                        </a>
+                        </button>
                         <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           <div className={`p-2 rounded-lg ${
