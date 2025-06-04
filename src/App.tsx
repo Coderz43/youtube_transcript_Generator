@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play } from 'lucide-react';
+import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play, Search, MoreVertical } from 'lucide-react';
 import AdminRoutes from './pages/admin';
 import { useTheme } from './ThemeContext';
 
@@ -536,6 +536,81 @@ function MainLayout() {
                           </span>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {transcript && (
+                  <div className={`mt-6 ${
+                    theme === 'light'
+                      ? 'bg-white'
+                      : 'bg-white/5'
+                  } rounded-lg p-4`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Search Transcript"
+                            className={`pl-9 pr-4 py-2 rounded-lg ${
+                              theme === 'light'
+                                ? 'bg-gray-100 text-gray-900'
+                                : 'bg-white/10 text-white'
+                            } border-0 focus:ring-2 focus:ring-[#ff4571] text-sm w-64`}
+                          />
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        </div>
+                        <select className={`px-3 py-2 rounded-lg ${
+                          theme === 'light'
+                            ? 'bg-gray-100 text-gray-900'
+                            : 'bg-white/10 text-white'
+                        } border-0 text-sm`}>
+                          <option>English (auto-generated)</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
+                          className="flex items-center gap-2 px-4 py-2 bg-[#ff4571] text-white rounded-lg hover:bg-[#ff3561] transition-colors text-sm font-medium"
+                        >
+                          <FileText className="w-4 h-4" />
+                          Copy Transcript
+                        </button>
+                        <button className={`p-2 rounded-lg ${
+                          theme === 'light'
+                            ? 'hover:bg-gray-100'
+                            : 'hover:bg-white/10'
+                        }`}>
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className={`max-h-[400px] overflow-y-auto rounded-lg ${
+                      theme === 'light'
+                        ? 'bg-gray-50'
+                        : 'bg-white/5'
+                    } p-4 space-y-4`}>
+                      {transcript.map((line, index) => {
+                        const [timestamp, text] = line.split(' → ');
+                        return (
+                          <div key={index} className="flex gap-4">
+                            <span className={`${
+                              theme === 'light'
+                                ? 'text-[#ff4571]'
+                                : 'text-[#ff6b8b]'
+                            } font-medium whitespace-nowrap`}>
+                              {timestamp}
+                            </span>
+                            <p className={`${
+                              theme === 'light'
+                                ? 'text-gray-700'
+                                : 'text-gray-300'
+                            }`}>
+                              {text}
+                            </p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
