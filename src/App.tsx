@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play, Search, MoreVertical } from 'lucide-react';
 import AdminRoutes from './pages/admin';
 import { useTheme } from './ThemeContext';
-import { getTranscript } from './api/transcript';
 
 const categoryMap: { [key: string]: string } = {
   '1': 'Film & Animation', '2': 'Autos & Vehicles', '10': 'Music',
@@ -109,8 +108,13 @@ function MainLayout() {
         duration: convertISODuration(item.contentDetails.duration)
       });
 
-      // Fetch transcript using the new API function
-      const transcriptData = await getTranscript(videoId);
+      // Fetch transcript
+      const transcriptResponse = await fetch(`/api/transcript?videoId=${videoId}`);
+      const transcriptData = await transcriptResponse.json();
+
+      if (!transcriptResponse.ok) {
+        throw new Error(transcriptData.error || 'Failed to fetch transcript');
+      }
 
       const formattedTranscript = transcriptData.map((line: any) => {
         const minutes = Math.floor(line.start / 60);

@@ -19,6 +19,7 @@ services:
       - react-router-dom
       - lucide-react
       - tailwindcss
+      - youtube-transcript
 
   - name: backend
     type: api
