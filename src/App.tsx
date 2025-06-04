@@ -94,32 +94,61 @@ function MainLayout() {
     }
   };
 
+  const fetchVideoDetails = async (videoId: string) => {
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
+    );
+    const data = await response.json();
+    const item = data.items[0];
+
+    if (item?.snippet && item?.contentDetails) {
+      setVideoDetails({
+        title: item.snippet.title,
+        thumbnail: item.snippet.thumbnails.medium.url,
+        channel: item.snippet.channelTitle,
+        channelId: item.snippet.channelId,
+        videoId: videoId,
+        category: categoryMap[item.snippet.categoryId] || 'Unknown',
+        duration: convertISODuration(item.contentDetails.duration)
+      });
+    }
+  };
+
   const handleSubmit = async () => {
-    const id = extractVideoId(url);
-    if (!id) return setError('Invalid YouTube URL');
+    setLoading(true);
+    setError('');
+    setTranscript(null);
+    setVideoDetails(null);
+
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      setError('Invalid YouTube URL');
+      setLoading(false);
+      return;
+    }
 
     try {
-      await fetchVideoDetails(id);
-      const res = await fetch(`/api/transcript?videoId=${id}`);
-      const data = await res.json();
+      await fetchVideoDetails(videoId);
+      const response = await fetch(`/api/transcript?videoId=${videoId}`);
+      const data = await response.json();
 
-      if (res.status !== 200) {
-        setTranscript(null);
-        setError(data.error || 'Failed to fetch transcript');
-        return;
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch transcript');
       }
 
       const formatted = data.map((line: any) => {
-        const min = Math.floor(line.start / 60);
-        const sec = String(Math.floor(line.start % 60)).padStart(2, '0');
-        return `${min}:${sec} → ${line.text}`;
+        const minutes = Math.floor(line.start / 60);
+        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds} → ${line.text}`;
       });
 
       setTranscript(formatted);
       setError('');
     } catch (err) {
-      setError('Server error while fetching transcript');
+      setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
       setTranscript(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -468,7 +497,7 @@ function MainLayout() {
                         alt="Video thumbnail"
                         className="w-48 h-27 object-cover rounded-lg"
                       />
-                      <div className="flex-1 min-w-0"> {/* Added min-w-0 to prevent overflow */}
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-semibold mb-2 line-clamp-2">{videoDetails.title}</h3>
                         <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -636,7 +665,6 @@ function MainLayout() {
                 },
                 {
                   icon: <Mic2 className="w-6 h-6" />,
-                
                   title: "For Content Creators",
                   features: ["Script Generation", "Content Repurposing", "Subtitle Creation"]
                 },

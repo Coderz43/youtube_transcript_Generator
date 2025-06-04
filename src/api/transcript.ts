@@ -19,11 +19,17 @@ app.get('/transcript', async (req, res) => {
       return res.status(400).json({ error: 'Video ID is required' });
     }
 
+    console.log('Fetching transcript for video:', videoId);
     const transcript = await YoutubeTranscript.fetchTranscript(videoId as string);
+    
+    if (!transcript || transcript.length === 0) {
+      return res.status(404).json({ error: 'No transcript found for this video' });
+    }
+
     res.json(transcript);
   } catch (error) {
     console.error('Transcript fetch error:', error);
-    res.status(500).json({ error: 'Failed to fetch transcript' });
+    res.status(500).json({ error: 'Failed to fetch transcript. Make sure the video exists and has captions available.' });
   }
 });
 
