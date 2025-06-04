@@ -9,17 +9,23 @@ app.get('/api/transcript', async (req, res) => {
   try {
     const { videoId } = req.query;
     
-    if (!videoId) {
-      return res.status(400).json({ error: 'Video ID is required' });
+    // Handle case where videoId might be an array
+    const videoIdString = Array.isArray(videoId) ? videoId[0] : videoId;
+    
+    if (!videoIdString || typeof videoIdString !== 'string') {
+      return res.status(400).json({ error: 'Video ID is required and must be a string' });
     }
 
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId as string);
+    const transcript = await YoutubeTranscript.fetchTranscript(videoIdString);
     res.json(transcript);
   } catch (error) {
+    console.error('Transcript fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch transcript' });
   }
 });
 
-app.listen(5000, () => {
-  console.log('Transcript API running on port 5000');
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Transcript API running on port ${PORT}`);
 });
