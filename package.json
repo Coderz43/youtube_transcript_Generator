@@ -11,7 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "api": "node --loader ts-node/esm src/api/transcript.ts"
+    "api": "node --experimental-json-modules --loader ts-node/esm src/api/transcript.ts"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
