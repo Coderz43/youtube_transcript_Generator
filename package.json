@@ -12,7 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "api": "python3 backend/app.py",
-    "backend:install": "python3 -m pip install -r backend/requirements.txt"
+    "backend:install": "python3 -m ensurepip --default-pip && python3 -m pip install -r backend/requirements.txt"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
