@@ -2,7 +2,11 @@ import React from 'react';
 import { useTheme } from './ThemeContext';
 
 function App() {
-  const { currentTheme } = useTheme();
+  const { theme } = useTheme();
+
+  const currentTheme = theme === 'system' 
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    : theme;
 
   return (
     <div className={currentTheme === 'light' ? 'bg-white' : 'bg-gray-900'}>
@@ -10,6 +14,19 @@ function App() {
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 py-20">
           <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1">
+              <h1 className="text-4xl lg:text-5xl font-bold mb-2">
+                Youtube Videos to Transcript
+                <span className="block text-[#ff4571]">Instantly</span>
+              </h1>
+              
+              <p className={`${
+                currentTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
+              } text-sm mb-4 max-w-xl`}>
+                Easily convert a youtube video to transcript, copy and download the generated youtube transcript in one click. Get started for free with 25 tokens.
+              </p>
+            </div>
+
             <div className="flex-1">
               <img
                 src="/heroo.webp"
