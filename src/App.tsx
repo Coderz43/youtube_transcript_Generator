@@ -606,16 +606,10 @@ function MainLayout() {
         </div>
 
         {/* Features Section */}
-        <div className={`${
-          theme === 'light' ? 'bg-gray-50' : 'bg-white/5'
-        } border-y ${
-          theme === 'light' ? 'border-gray-100' : 'border-white/10'
-        } mt-20`}>
+        <div className="bg-[#0f172a] text-white border-y border-white/10 mt-20">
           <div className="max-w-7xl mx-auto px-4 py-20">
             <h2 className="text-4xl font-bold text-center mb-4">Features</h2>
-            <p className={`text-center mb-16 max-w-2xl mx-auto ${
-              theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-            }`}>
+            <p className="text-center mb-16 max-w-2xl mx-auto text-gray-400">
               Everything You Need to Turn YouTube Videos into Actionable Content
             </p>
 
@@ -637,18 +631,10 @@ function MainLayout() {
                   description: "Support for over 100+ languages with automatic detection."
                 }
               ].map((feature, index) => (
-                <div key={index} className={`${
-                  theme === 'light'
-                    ? 'bg-white shadow-lg'
-                    : 'bg-white/5'
-                } rounded-2xl p-8 backdrop-blur-sm border ${
-                  theme === 'light' ? 'border-gray-100' : 'border-white/10'
-                }`}>
+                <div key={index} className="bg-white/5 hover:bg-white/10 rounded-2xl p-8 backdrop-blur-sm border border-white/10 transition-colors">
                   <div className="text-[#ff4571] mb-6">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
-                  <p className={`${
-                    theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                  }`}>{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-4 text-white">{feature.title}</h3>
+                  <p className="text-gray-400">{feature.description}</p>
                 </div>
               ))}
             </div>
