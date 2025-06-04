@@ -1,26 +1,29 @@
 import express from 'express';
+import cors from 'cors';
 import { YoutubeTranscript } from 'youtube-transcript';
 
-const router = express.Router();
+const app = express();
+const PORT = 5000;
 
-router.get('/', async (req, res) => {
+app.use(cors());
+app.use(express.json());
+
+app.get('/api/transcript', async (req, res) => {
   try {
     const { videoId } = req.query;
     
-    // Handle case where videoId might be an array
-    const videoIdString = Array.isArray(videoId) ? videoId[0] : videoId;
-    
-    if (!videoIdString || typeof videoIdString !== 'string') {
-      return res.status(400).json({ error: 'Video ID is required and must be a string' });
+    if (!videoId) {
+      return res.status(400).json({ error: 'Video ID is required' });
     }
 
-    const transcript = await YoutubeTranscript.fetchTranscript(videoIdString);
+    const transcript = await YoutubeTranscript.fetchTranscript(videoId as string);
     res.json(transcript);
   } catch (error) {
-    // Safely convert error to string to prevent TypeError
-    console.error('Transcript fetch error:', String(error));
+    console.error('Error fetching transcript:', error);
     res.status(500).json({ error: 'Failed to fetch transcript' });
   }
 });
 
-export default router;
+app.listen(PORT, () => {
+  console.log(`Transcript API running on port ${PORT}`);
+});

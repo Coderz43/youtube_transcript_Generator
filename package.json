@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "api": "node backend/index.js"
+    "api": "node --loader ts-node/esm src/api/transcript.ts"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
