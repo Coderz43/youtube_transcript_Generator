@@ -539,15 +539,15 @@ function MainLayout() {
               <div className="flex items-center gap-8 text-xs text-gray-400">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#ff4571]" />
-                  Scamadviser Verified
+               Third-Party Security Verified (Scamadviser)
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#ff4571]" />
-                  Trusted by 563k+ users worldwide
+                 Global Trust: 563,000+ Users and Growing
                 </div>
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-[#ff4571]" />
-                  SSL encrypted
+               SSL Encryption Ensures Full Data Security
                 </div>
               </div>
             </div>
