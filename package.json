@@ -3,16 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
- "scripts": {
-  "dev": "vite --host",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview",
-  "prisma:generate": "prisma generate",
-  "prisma:migrate": "prisma migrate dev",
-  "prisma:studio": "prisma studio",
-  "api": "ts-node src/api/transcript.ts"
-},
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "api": "node backend/index.js"
+  },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
     "@prisma/client": "^5.10.2",

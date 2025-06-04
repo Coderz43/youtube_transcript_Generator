@@ -23,4 +23,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-export const router;
+export default router;
