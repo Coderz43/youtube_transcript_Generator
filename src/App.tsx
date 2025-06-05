@@ -24,11 +24,12 @@ function convertISODuration(duration: string): string {
   if (!match) return '';
   const [, hours, minutes, seconds] = match.map(v => parseInt(v || '0', 10));
   const parts = [];
-  if (hours) parts.push(${hours}h);
-  if (minutes) parts.push(${minutes}m);
-  if (seconds) parts.push(${seconds}s);
+  if (hours) parts.push(`${hours}h`);
+  if (minutes) parts.push(`${minutes}m`);
+  if (seconds) parts.push(`${seconds}s`);
   return parts.join(' ') || '0s';
 }
+
 
 function MainLayout() {
   const { theme } = useTheme();
@@ -90,13 +91,14 @@ const detailsResponse = await fetch(
         duration: convertISODuration(item.contentDetails.duration)
       });
 
-      // Fetch transcript
-      const transcriptData = await fetchTranscript(videoId);
-      const formattedTranscript = transcriptData.map((line: any) => {
-        const minutes = Math.floor(line.start / 60);
-        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
-        return ${minutes}:${seconds} → ${line.text};
-      });
+    // Fetch transcript
+const transcriptData = await fetchTranscript(videoId);
+const formattedTranscript = transcriptData.map((line: any) => {
+  const minutes = Math.floor(line.start / 60);
+  const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+  return `${minutes}:${seconds} → ${line.text}`;
+});
+
 
       setTranscript(formattedTranscript);
     } catch (err) {
