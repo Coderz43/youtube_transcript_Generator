@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play, Search, MoreVertical } from 'lucide-react';
 import AdminRoutes from './pages/admin';
 import { useTheme } from './ThemeContext';
-import { fetchTranscript, extractVideoId } from './api/transcript';
 
 const categoryMap: { [key: string]: string } = {
   '1': 'Film & Animation', '2': 'Autos & Vehicles', '10': 'Music',
@@ -37,7 +36,7 @@ function MainLayout() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [transcript, setTranscript] = useState<any[] | null>(null);
+  const [transcript, setTranscript] = useState<string[] | null>(null);
   const [error, setError] = useState('');
   const [videoDetails, setVideoDetails] = useState<{
     title: string;
@@ -48,6 +47,29 @@ function MainLayout() {
     category: string;
     duration: string;
   } | null>(null);
+
+  const extractVideoId = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname;
+
+      if (hostname.includes('youtu.be')) {
+        return urlObj.pathname.slice(1);
+      }
+
+      if (hostname.includes('youtube.com')) {
+        if (urlObj.pathname.startsWith('/watch')) {
+          return urlObj.searchParams.get('v');
+        } else if (urlObj.pathname.startsWith('/shorts/')) {
+          return urlObj.pathname.split('/shorts/')[1];
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -87,7 +109,13 @@ function MainLayout() {
       });
 
       // Fetch transcript
-      const transcriptData = await fetchTranscript(videoId);
+      const transcriptResponse = await fetch(`/api/transcript?videoId=${videoId}`);
+      const transcriptData = await transcriptResponse.json();
+
+      if (!transcriptResponse.ok) {
+        throw new Error(transcriptData.error || 'Failed to fetch transcript');
+      }
+
       const formattedTranscript = transcriptData.map((line: any) => {
         const minutes = Math.floor(line.start / 60);
         const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');

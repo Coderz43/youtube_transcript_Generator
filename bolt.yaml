@@ -1,0 +1,14 @@
+services:
+  - name: frontend
+    project_path: .
+    install_command: npm install
+    start_command: npm run dev
+    type: web
+
+  - name: backend
+    project_path: ./backend
+    start_command: node index.js
+    type: api
+    proxy:
+      path: /api
+      target_port: 5000
