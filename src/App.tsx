@@ -22,8 +22,8 @@ const categoryMap: { [key: string]: string } = {
 
 function convertISODuration(duration: string): string {
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!match) return '';
-  const [, hours, minutes, seconds] = match.map(v => parseInt(v || '0', 10));
+  if (!match) return '0s';
+  const [, hours, minutes, seconds] = match.map((v) => parseInt(v || '0', 10));
   const parts = [];
   if (hours) parts.push(`${hours}h`);
   if (minutes) parts.push(`${minutes}m`);
@@ -31,87 +31,65 @@ function convertISODuration(duration: string): string {
   return parts.join(' ') || '0s';
 }
 
-function MainLayout() {
-  const { theme } = useTheme();
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const [isBulkOpen, setIsBulkOpen] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [transcript, setTranscript] = useState<any[] | null>(null);
-  const [error, setError] = useState('');
-  const [videoDetails, setVideoDetails] = useState<{
-    title: string;
-    thumbnail: string;
-    channel: string;
-    channelId: string;
-    videoId: string;
-    category: string;
-    duration: string;
-  } | null>(null);
+const handleSubmit = async () => {
+  setLoading(true);
+  setError('');
+  setTranscript(null);
+  setVideoDetails(null);
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError('');
-    setTranscript(null);
-    setVideoDetails(null);
-
-    const videoId = extractVideoId(url);
-
-if (!videoId) {
-  setError('❌ Invalid YouTube URL. Please check and try again.');
-  setLoading(false);
-  return;
-}
-
-try {
-  const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
-
-  // Debug logging (optional)
-  console.log('✅ Extracted Video ID:', videoId);
-  console.log('📡 Fetching metadata from:', 
-    `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
-  );
-
-  const detailsResponse = await fetch(
-    `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
-  );
-
-  const detailsData = await detailsResponse.json();
-
-  if (!detailsData.items || detailsData.items.length === 0) {
-    setError('❌ Video not found. Please verify the URL or try another video.');
+  const videoId = extractVideoId(url);
+  if (!videoId) {
+    setError('❌ Invalid YouTube URL. Please check and try again.');
     setLoading(false);
     return;
   }
 
-  const item = detailsData.items[0];
-  setVideoDetails({
-    title: item.snippet.title,
-    thumbnail: item.snippet.thumbnails.medium.url,
-    channel: item.snippet.channelTitle,
-    channelId: item.snippet.channelId,
-    videoId: videoId,
-    category: categoryMap[item.snippet.categoryId] || 'Unknown',
-    duration: convertISODuration(item.contentDetails.duration)
-  });
+  try {
+    const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
 
-  const transcriptData = await fetchTranscript(videoId);
-  const formattedTranscript = transcriptData.map((line: any) => {
-    const minutes = Math.floor(line.start / 60);
-    const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds} → ${line.text}`;
-  });
+    console.log('✅ Extracted Video ID:', videoId);
+    console.log('📡 Fetching metadata from:', 
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
+    );
 
-  setTranscript(formattedTranscript);
-} catch (err) {
-  console.error('❌ Error during transcript fetch:', err);
-  setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
-} finally {
-  setLoading(false);
-}
+    const detailsResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
+    );
 
+    const detailsData = await detailsResponse.json();
+    if (!detailsData.items || detailsData.items.length === 0) {
+      setError('❌ Video not found. Please verify the URL or try another video.');
+      setLoading(false);
+      return;
+    }
+
+    const item = detailsData.items[0];
+    setVideoDetails({
+      title: item.snippet.title,
+      thumbnail: item.snippet.thumbnails.medium.url,
+      channel: item.snippet.channelTitle,
+      channelId: item.snippet.channelId,
+      videoId: videoId,
+      category: categoryMap[item.snippet.categoryId] || 'Unknown',
+      duration: convertISODuration(item.contentDetails.duration)
+    });
+
+    const transcriptData = await fetchTranscript(videoId);
+    const formattedTranscript = transcriptData.map((line: any) => {
+      const minutes = Math.floor(line.start / 60);
+      const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+      return `${minutes}:${seconds} → ${line.text}`;
+    });
+
+    setTranscript(formattedTranscript);
+  } catch (err) {
+    console.error('❌ Error during transcript fetch:', err);
+    setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
+  } finally {
+    setLoading(false);
   }
+};
+
   const themes = [
     { id: 'light', label: 'Light', Icon: Sun },
     { id: 'dark', label: 'Dark', Icon: Moon },
