@@ -1,32 +1,25 @@
-export function extractVideoId(url: string): string {
-  // Handle various YouTube URL formats
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\n/]+)/,
-    /youtube\.com\/shorts\/([^&?\n/]+)/
-  ];
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match && match[1]) {
-      return match[1];
-    }
-  }
-
-  throw new Error('Invalid YouTube URL format');
-}
-
 export async function fetchTranscript(videoId: string) {
   const res = await fetch(`/api/transcript?videoId=${videoId}`);
 
-  const contentType = res.headers.get("content-type");
-  if (!contentType || !contentType.includes("application/json")) {
+  const contentType = res.headers.get("content-type") || '';
+  if (!contentType.includes("application/json")) {
+    const text = await res.text(); // capture HTML error
+    console.error("Transcript Error Response:", text);
     throw new Error("Transcript API did not return JSON");
   }
 
   const data = await res.json();
+
   if (!data || !Array.isArray(data)) {
-    throw new Error("Invalid transcript format received");
+    throw new Error("Invalid transcript format");
   }
 
   return data;
+}
+
+export function extractVideoId(url: string): string | null {
+  // Supports various YouTube formats like https://www.youtube.com/watch?v=xxxx and https://youtu.be/xxxx
+  const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([0-9A-Za-z_-]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
 }
