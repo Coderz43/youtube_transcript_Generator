@@ -64,7 +64,8 @@ if (!videoId) {
 }
 
 try {
-  const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
+ const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
+
 
   // Debug logging (optional)
   console.log('✅ Extracted Video ID:', videoId);
