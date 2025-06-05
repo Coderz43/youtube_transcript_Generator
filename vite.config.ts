@@ -9,11 +9,11 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    proxy: {
-      '/api': {
-        target: 'http://3001-zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--6ba59070.local-credentialless.webcontainer-api.io',
-        changeOrigin: true,
-        secure: false,
+  proxy: {
+  '/api': {
+    target: 'http://localhost:3001', // or full Bolt backend URL
+    changeOrigin: true,
+    secure: false
         
     },
   },
