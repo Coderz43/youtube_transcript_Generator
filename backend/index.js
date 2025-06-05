@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import { getTranscript } from 'youtube-transcript'; 
+import ytTranscript from 'youtube-transcript'; // YEH LINE SAHI HAI
+
+const getTranscript = ytTranscript.getTranscript; // AUR YEH LINE BHI SAHI HAI, JO PEHLE THI
 
 const app = express();
 app.use(cors());
@@ -13,7 +15,7 @@ app.get('/api/transcript', async (req, res) => {
   }
 
   try {
-    // ✅ Ab seedha getTranscript ko call karein
+    // ✅ Ab getTranscript ko seedha call karein, jaise pehle tha
     const transcript = await getTranscript(videoId); 
 
     if (!Array.isArray(transcript)) {
