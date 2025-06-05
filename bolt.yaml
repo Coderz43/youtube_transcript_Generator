@@ -1,6 +1,7 @@
 services:
   - name: frontend
     project_path: .
+    install_command: npm install
     start_command: npm run dev
     type: web
 
