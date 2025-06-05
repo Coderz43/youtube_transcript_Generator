@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import ytTranscript from 'youtube-transcript'; // YEH LINE SAHI HAI
+import ytTranscript from 'youtube-transcript'; // CommonJS default import
 
-const getTranscript = ytTranscript.getTranscript; // AUR YEH LINE BHI SAHI HAI, JO PEHLE THI
+const getTranscript = ytTranscript.getTranscript; // Access like this
 
 const app = express();
 app.use(cors());
@@ -15,8 +15,7 @@ app.get('/api/transcript', async (req, res) => {
   }
 
   try {
-    // ✅ Ab getTranscript ko seedha call karein, jaise pehle tha
-    const transcript = await getTranscript(videoId); 
+    const transcript = await getTranscript(videoId); // ✅ Correct call
 
     if (!Array.isArray(transcript)) {
       throw new Error('Transcript format is invalid');
