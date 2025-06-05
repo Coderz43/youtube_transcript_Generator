@@ -88,6 +88,12 @@ function MainLayout() {
 
       // Fetch transcript
       const transcriptData = await fetchTranscript(videoId);
+      if (!transcriptData.length) {
+        setError('No transcript available for this video');
+        setLoading(false);
+        return;
+      }
+
       const formattedTranscript = transcriptData.map((line: any) => {
         const minutes = Math.floor(line.start / 60);
         const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
@@ -798,3 +804,5 @@ function App() {
 }
 
 export default App;
+
+export default App
