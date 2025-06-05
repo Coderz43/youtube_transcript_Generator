@@ -7,11 +7,6 @@ const { getTranscript } = pkg;
 const app = express();
 app.use(cors());
 
-// ✅ New route to fix "Cannot GET /"
-app.get('/', (req, res) => {
-  res.send('YouTube Transcript Backend is Running');
-});
-
 app.get('/api/transcript', async (req, res) => {
   const videoId = req.query.videoId;
 
@@ -22,18 +17,19 @@ app.get('/api/transcript', async (req, res) => {
   try {
     const transcript = await getTranscript(videoId);
 
+    // ✅ if empty or unexpected, fallback gracefully
     if (!Array.isArray(transcript)) {
-      throw new Error('Transcript format is invalid');
+      console.warn('⚠️ Invalid format:', transcript);
+      return res.status(200).json([]);
     }
 
     res.setHeader('Content-Type', 'application/json');
     res.status(200).json(transcript);
   } catch (err) {
     console.error('❌ Transcript fetch failed:', err.message);
-    res.status(500).json({
-      error: 'Failed to fetch transcript',
-      message: err instanceof Error ? err.message : 'Unknown error',
-    });
+    
+    // ✅ Always return valid JSON (even if failed)
+    res.status(200).json([]);
   }
 });
 
