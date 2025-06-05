@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { fetchTranscript, extractVideoId } from './api/transcript';
 import { useTheme } from './ThemeContext';
 import { categoryMap } from './categoryMap';
+import { Sun, Moon, Laptop2 } from 'lucide-react';
 
 function convertISODuration(duration: string): string {
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -132,13 +133,11 @@ function MainLayout() {
 
 export default MainLayout;
 
-
-  const themes = [
-    { id: 'light', label: 'Light', Icon: Sun },
-    { id: 'dark', label: 'Dark', Icon: Moon },
-    { id: 'system', label: 'System', Icon: Laptop2 }
-  ];
-
+const themes = [
+  { id: 'light', label: 'Light', Icon: Sun },
+  { id: 'dark', label: 'Dark', Icon: Moon },
+  { id: 'system', label: 'System', Icon: Laptop2 }
+];
   const sidebarItems = [
     { 
       icon: <Youtube className="w-5 h-5" />, 
