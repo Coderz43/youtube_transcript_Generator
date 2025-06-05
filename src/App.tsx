@@ -80,7 +80,9 @@ try {
   const detailsData = await detailsResponse.json();
 
   if (!detailsData.items || detailsData.items.length === 0) {
-    throw new Error('❌ Video not found. Please verify the URL or try another video.');
+    setError('❌ Video not found. Please verify the URL or try another video.');
+    setLoading(false);
+    return;
   }
 
   const item = detailsData.items[0];
@@ -103,7 +105,8 @@ try {
 
   setTranscript(formattedTranscript);
 } catch (err) {
-  setError(err instanceof Error ? err.message : '⚠️ An unexpected error occurred');
+  console.error('❌ Error during transcript fetch:', err);
+  setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
 } finally {
   setLoading(false);
 }
