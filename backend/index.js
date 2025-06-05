@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import ytTranscript from 'youtube-transcript'; // ✅ Default import
-
-const getTranscript = ytTranscript.getTranscript; // ✅ Manually pull function
+import { getTranscript } from 'youtube-transcript';
 
 const app = express();
 app.use(cors());
