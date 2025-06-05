@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { getTranscript } from 'youtube-transcript';
+import pkg from 'youtube-transcript';
+const { getTranscript } = pkg;
 
 const app = express();
 app.use(cors());
