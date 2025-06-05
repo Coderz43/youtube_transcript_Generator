@@ -6,4 +6,8 @@ import { useTheme } from './ThemeContext';
 import { fetchTranscript, extractVideoId } from './api/transcript';
 import TranscriptPage from './pages/TranscriptPage';
 
-// ... rest of the file remains unchanged ...
+function App() {
+  // ... rest of the component implementation ...
+}
+
+export default App;
