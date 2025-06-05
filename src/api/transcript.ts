@@ -1,6 +1,13 @@
 export async function fetchTranscript(videoId: string) {
   const res = await fetch(`/api/transcript?videoId=${videoId}`);
 
+  // First check if the response was successful
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    const errorMessage = errorData?.message || `HTTP error! status: ${res.status}`;
+    throw new Error(errorMessage);
+  }
+
   const contentType = res.headers.get("content-type") || '';
   if (!contentType.includes("application/json")) {
     const text = await res.text(); // capture HTML error
@@ -11,7 +18,8 @@ export async function fetchTranscript(videoId: string) {
   const data = await res.json();
 
   if (!data || !Array.isArray(data)) {
-    throw new Error("Invalid transcript format");
+    console.error("Invalid transcript data received:", data);
+    throw new Error("Invalid transcript format - Expected an array of transcript segments");
   }
 
   return data;
