@@ -89,7 +89,7 @@ const handleSubmit = async () => {
     setLoading(false);
   }
 }
-}
+
   const themes = [
     { id: 'light', label: 'Light', Icon: Sun },
     { id: 'dark', label: 'Dark', Icon: Moon },
