@@ -3,11 +3,11 @@ import cors from "cors";
 import { YoutubeTranscript } from "youtube-transcript";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+let PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
-app.get("/api/transcript", async (req, res) => {
+app.get("/transcript", async (req, res) => {
   try {
     const { videoId } = req.query;
     if (!videoId) return res.status(400).json({ error: "Missing videoId" });

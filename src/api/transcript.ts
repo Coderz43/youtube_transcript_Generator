@@ -1,14 +1,15 @@
-import { YoutubeTranscript } from 'youtube-transcript';
-
 const baseUrl = "/api";
 
 export const fetchTranscript = async (videoId: string) => {
   try {
-    const response = await fetch(`${baseUrl}/transcript?videoId=${videoId}`);
-    if (!response.ok) throw new Error("Failed to fetch transcript");
+    const response = await fetch(`${baseUrl}/transcript?video_id=${videoId}`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to fetch transcript");
+    }
     return await response.json();
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching transcript:", err);
     throw err;
   }
 };
