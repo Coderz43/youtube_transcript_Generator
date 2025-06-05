@@ -11,7 +11,7 @@ export default defineConfig({
     host: true,
   proxy: {
   '/api': {
-    target: 'http://localhost:3001', // or full Bolt backend URL
+    target: 'http://localhost:5173', // or full Bolt backend URL
     changeOrigin: true,
     secure: false
         
