@@ -65,8 +65,7 @@ if (!videoId) {
 }
 
 try {
- const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
-
+  const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
 
   // Debug logging (optional)
   console.log('✅ Extracted Video ID:', videoId);
@@ -86,25 +85,18 @@ try {
     return;
   }
 
-      const item = detailsData.items[0];
+  const item = detailsData.items[0];
+  setVideoDetails({
+    title: item.snippet.title,
+    thumbnail: item.snippet.thumbnails.medium.url,
+    channel: item.snippet.channelTitle,
+    channelId: item.snippet.channelId,
+    videoId: videoId,
+    category: categoryMap[item.snippet.categoryId] || 'Unknown',
+    duration: convertISODuration(item.contentDetails.duration)
+  });
 
-setVideoDetails({
-  title: item?.snippet?.title || 'Untitled Video',
-  thumbnail: item?.snippet?.thumbnails?.medium?.url || '',
-  channel: item?.snippet?.channelTitle || 'Unknown Channel',
-  channelId: item?.snippet?.channelId || 'Unknown',
-  videoId: videoId,
-  category: categoryMap[item?.snippet?.categoryId] || 'Unknown',
-  duration: convertISODuration(item?.contentDetails?.duration || '')
-});
-
-try {
   const transcriptData = await fetchTranscript(videoId);
-
-  if (!Array.isArray(transcriptData)) {
-    throw new Error('Transcript is not in array format');
-  }
-
   const formattedTranscript = transcriptData.map((line: any) => {
     const minutes = Math.floor(line.start / 60);
     const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
@@ -113,8 +105,10 @@ try {
 
   setTranscript(formattedTranscript);
 } catch (err) {
-  console.error("❌ Transcript fetch failed:", err);
-  setError('Transcript not available or failed to load.');
+  console.error('❌ Error during transcript fetch:', err);
+  setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
+} finally {
+  setLoading(false);
 }
 
 
