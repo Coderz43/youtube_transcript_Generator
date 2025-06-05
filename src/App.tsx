@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import.meta.env.VITE_YOUTUBE_API_KEY
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play, Search, MoreVertical } from 'lucide-react';
 import AdminRoutes from './pages/admin';
@@ -22,8 +21,8 @@ const categoryMap: { [key: string]: string } = {
 
 function convertISODuration(duration: string): string {
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!match) return '0s';
-  const [, hours, minutes, seconds] = match.map((v) => parseInt(v || '0', 10));
+  if (!match) return '';
+  const [, hours, minutes, seconds] = match.map(v => parseInt(v || '0', 10));
   const parts = [];
   if (hours) parts.push(`${hours}h`);
   if (minutes) parts.push(`${minutes}m`);
@@ -31,64 +30,77 @@ function convertISODuration(duration: string): string {
   return parts.join(' ') || '0s';
 }
 
-const handleSubmit = async () => {
-  setLoading(true);
-  setError('');
-  setTranscript(null);
-  setVideoDetails(null);
+function MainLayout() {
+  const { theme } = useTheme();
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [transcript, setTranscript] = useState<any[] | null>(null);
+  const [error, setError] = useState('');
+  const [videoDetails, setVideoDetails] = useState<{
+    title: string;
+    thumbnail: string;
+    channel: string;
+    channelId: string;
+    videoId: string;
+    category: string;
+    duration: string;
+  } | null>(null);
 
-  const videoId = extractVideoId(url);
-  if (!videoId) {
-    setError('❌ Invalid YouTube URL. Please check and try again.');
-    setLoading(false);
-    return;
-  }
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError('');
+    setTranscript(null);
+    setVideoDetails(null);
 
-  try {
-    const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
-
-    console.log('✅ Extracted Video ID:', videoId);
-    console.log('📡 Fetching metadata from:', 
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
-    );
-
-    const detailsResponse = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
-    );
-
-    const detailsData = await detailsResponse.json();
-    if (!detailsData.items || detailsData.items.length === 0) {
-      setError('❌ Video not found. Please verify the URL or try another video.');
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      setError('Invalid YouTube URL');
       setLoading(false);
       return;
     }
 
-    const item = detailsData.items[0];
-    setVideoDetails({
-      title: item.snippet.title,
-      thumbnail: item.snippet.thumbnails.medium.url,
-      channel: item.snippet.channelTitle,
-      channelId: item.snippet.channelId,
-      videoId: videoId,
-      category: categoryMap[item.snippet.categoryId] || 'Unknown',
-      duration: convertISODuration(item.contentDetails.duration)
-    });
+    try {
+      // Fetch video details
+      const detailsResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
+      );
+      const detailsData = await detailsResponse.json();
 
-    const transcriptData = await fetchTranscript(videoId);
-    const formattedTranscript = transcriptData.map((line: any) => {
-      const minutes = Math.floor(line.start / 60);
-      const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
-      return `${minutes}:${seconds} → ${line.text}`;
-    });
+      if (!detailsData.items?.length) {
+        setError('Video not found');
+        setLoading(false);
+        return;
+      }
 
-    setTranscript(formattedTranscript);
-  } catch (err) {
-    console.error('❌ Error during transcript fetch:', err);
-    setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
-  } finally {
-    setLoading(false);
-  }
+      const item = detailsData.items[0];
+      setVideoDetails({
+        title: item.snippet.title,
+        thumbnail: item.snippet.thumbnails.medium.url,
+        channel: item.snippet.channelTitle,
+        channelId: item.snippet.channelId,
+        videoId: videoId,
+        category: categoryMap[item.snippet.categoryId] || 'Unknown',
+        duration: convertISODuration(item.contentDetails.duration)
+      });
 
+      // Fetch transcript
+      const transcriptData = await fetchTranscript(videoId);
+      const formattedTranscript = transcriptData.map((line: any) => {
+        const minutes = Math.floor(line.start / 60);
+        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds} → ${line.text}`;
+      });
+
+      setTranscript(formattedTranscript);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const themes = [
     { id: 'light', label: 'Light', Icon: Sun },
@@ -151,8 +163,8 @@ const handleSubmit = async () => {
 
   return (
     <div className={`min-h-screen ${
-      theme === 'light'
-        ? 'bg-white text-gray-900'
+      theme === 'light' 
+        ? 'bg-white text-gray-900' 
         : 'bg-[#0f172a] text-white'
     }`}>
       {/* Top Navigation */}
@@ -166,85 +178,66 @@ const handleSubmit = async () => {
           : 'border-white/10'
       }`}>
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-end items-center gap-6">
-          <a
-            href="#"
-            className={`${
-              theme === 'light'
-                ? 'text-gray-600 hover:text-gray-900'
-                : 'text-gray-400 hover:text-white'
-            } text-sm font-medium transition-colors`}
-          >
+          <a href="#" className={`${
+            theme === 'light' 
+              ? 'text-gray-600 hover:text-gray-900' 
+              : 'text-gray-400 hover:text-white'
+          } text-sm font-medium transition-colors`}>
             Pricing
           </a>
-
-          <a
-            href="#"
-            className={`${
-              theme === 'light'
-                ? 'text-gray-600 hover:text-gray-900'
-                : 'text-gray-400 hover:text-white'
-            } text-sm font-medium transition-colors`}
-          >
+          <a href="#" className={`${
+            theme === 'light' 
+              ? 'text-gray-600 hover:text-gray-900' 
+              : 'text-gray-400 hover:text-white'
+          } text-sm font-medium transition-colors`}>
             API
           </a>
-
           <div className="relative">
             <button
               onClick={() => setIsBulkOpen(!isBulkOpen)}
               className={`${
-                theme === 'light'
-                  ? 'text-gray-600 hover:text-gray-900'
+                theme === 'light' 
+                  ? 'text-gray-600 hover:text-gray-900' 
                   : 'text-gray-400 hover:text-white'
               } text-sm font-medium transition-colors flex items-center gap-1`}
             >
               Bulk
               <ChevronDown className="w-4 h-4" />
             </button>
-
             {isBulkOpen && (
-              <div
-                className={`absolute top-full right-0 mt-2 w-48 ${
+              <div className={`absolute top-full right-0 mt-2 w-48 ${
+                theme === 'light'
+                  ? 'bg-white/80 text-gray-900'
+                  : 'bg-white/10 text-white'
+              } backdrop-blur-lg rounded-lg shadow-lg py-2`}>
+                <a href="#" className={`block px-4 py-2 text-sm ${
                   theme === 'light'
-                    ? 'bg-white/80 text-gray-900'
-                    : 'bg-white/10 text-white'
-                } backdrop-blur-lg rounded-lg shadow-lg py-2`}
-              >
-                <a
-                  href="#"
-                  className={`block px-4 py-2 text-sm ${
-                    theme === 'light'
-                      ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}>
                   Extract from Playlist
                 </a>
-                <a
-                  href="#"
-                  className={`block px-4 py-2 text-sm ${
-                    theme === 'light'
-                      ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
+                <a href="#" className={`block px-4 py-2 text-sm ${
+                  theme === 'light'
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}>
                   Extract from CSV
                 </a>
               </div>
             )}
           </div>
-
-          <a
-            href="#"
+          <a 
+            href="#" 
             className={`${
-              theme === 'light'
-                ? 'text-gray-600 hover:text-gray-900'
+              theme === 'light' 
+                ? 'text-gray-600 hover:text-gray-900' 
                 : 'text-gray-400 hover:text-white'
             } text-sm font-medium transition-colors flex items-center gap-1`}
           >
             <img src="/icons8-discord-24.png" alt="Discord" className="w-5 h-5" />
             Join us on Discord
           </a>
-
           <div className="relative">
             <button
               onClick={() => setIsThemeOpen(!isThemeOpen)}
