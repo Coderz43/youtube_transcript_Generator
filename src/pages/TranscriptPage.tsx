@@ -7,22 +7,38 @@ export default function TranscriptPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleExtract = async () => {
-    setLoading(true);
-    setError('');
-    const match = videoUrl.match(/v=([^&]+)/);
-    if (!match) return setError('Invalid YouTube URL');
+  const extractVideoId = (url: string) => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
+      /youtube.com\/embed\/([^&\n?#]+)/,
+    ];
 
-    const videoId = match[1];
-    const data = await getTranscript(videoId);
-
-    if (!data || data.error) {
-      setError('Transcript not found or quota exceeded.');
-      setTranscript(null);
-    } else {
-      setTranscript(data);
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
     }
-    setLoading(false);
+    return null;
+  };
+
+  const handleExtract = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setTranscript(null);
+
+      const videoId = extractVideoId(videoUrl);
+      if (!videoId) {
+        setError('Invalid YouTube URL');
+        return;
+      }
+
+      const data = await getTranscript(videoId);
+      setTranscript(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,11 +69,43 @@ export default function TranscriptPage() {
         </button>
       </div>
 
-      {error && <p className="text-red-500 mt-6">{error}</p>}
+      {error && (
+        <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+          {error}
+        </div>
+      )}
 
       {transcript && (
-        <div className="bg-[#1a1d2b] text-sm rounded p-4 mt-6 max-w-3xl w-full overflow-auto">
-          <pre>{JSON.stringify(transcript, null, 2)}</pre>
+        <div className="mt-6 w-full max-w-3xl space-y-4">
+          <div className="bg-[#1a1d2b] rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">{transcript.videoDetails.title}</h2>
+            <div className="flex gap-4 text-sm text-gray-400">
+              <span>Channel: {transcript.videoDetails.channelTitle}</span>
+              <span>•</span>
+              <span>Published: {new Date(transcript.videoDetails.publishedAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <div className="bg-[#1a1d2b] rounded-lg p-6">
+            <h3 className="text-lg font-semibold mb-4">Available Captions</h3>
+            {transcript.captions.length > 0 ? (
+              <div className="space-y-3">
+                {transcript.captions.map((caption: any) => (
+                  <div key={caption.id} className="flex items-center justify-between p-3 bg-[#252837] rounded">
+                    <div>
+                      <p className="font-medium">{caption.snippet.language}</p>
+                      <p className="text-sm text-gray-400">{caption.snippet.trackKind}</p>
+                    </div>
+                    <button className="px-4 py-2 bg-pink-500 rounded hover:bg-pink-600 transition-colors">
+                      Download
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400">No captions available for this video</p>
+            )}
+          </div>
         </div>
       )}
     </div>
