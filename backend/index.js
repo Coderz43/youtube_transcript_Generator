@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import ytTranscript from 'youtube-transcript'; // ✅ CommonJS default import
+import pkg from 'youtube-transcript';
+
+const { getTranscript } = pkg;
 
 const app = express();
 app.use(cors());
@@ -13,21 +15,21 @@ app.get('/api/transcript', async (req, res) => {
   }
 
   try {
-    // ✅ Access function via default import (CommonJS style)
-    const transcript = await ytTranscript.default.getTranscript(videoId);
+    const transcript = await getTranscript(videoId);
 
+    // ✅ if empty or unexpected, fallback gracefully
     if (!Array.isArray(transcript)) {
-      throw new Error('Transcript format is invalid');
+      console.warn('⚠️ Invalid format:', transcript);
+      return res.status(200).json([]);
     }
 
     res.setHeader('Content-Type', 'application/json');
     res.status(200).json(transcript);
   } catch (err) {
     console.error('❌ Transcript fetch failed:', err.message);
-    res.status(500).json({
-      error: 'Failed to fetch transcript',
-      message: err instanceof Error ? err.message : 'Unknown error',
-    });
+    
+    // ✅ Always return valid JSON (even if failed)
+    res.status(200).json([]);
   }
 });
 
@@ -35,3 +37,4 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅ Backend running at http://localhost:${PORT}`);
 });
+
