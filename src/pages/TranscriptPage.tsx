@@ -1,39 +1,46 @@
 import React, { useState } from 'react';
-import { getTranscript } from '../api/getTranscript';
+import { useTheme } from '../ThemeContext';
+import { extractVideoId, fetchTranscript } from '../api/transcript';
+import {
+  Youtube,
+  Search,
+  FileText,
+  Languages,
+  Users,
+  CheckCircle2,
+  Clock,
+  Play
+} from 'lucide-react';
 
 export default function TranscriptPage() {
-  const [videoUrl, setVideoUrl] = useState('');
-  const [transcript, setTranscript] = useState<any>(null);
+  const { theme } = useTheme();
+  const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [videoDetails, setVideoDetails] = useState(null);
+  const [transcript, setTranscript] = useState(null);
 
-  const extractVideoId = (url: string) => {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
-      /youtube.com\/embed\/([^&\n?#]+)/,
-    ];
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError('');
+    setVideoDetails(null);
+    setTranscript(null);
 
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) return match[1];
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      setError('Invalid YouTube URL');
+      setLoading(false);
+      return;
     }
-    return null;
-  };
 
-  const handleExtract = async () => {
     try {
-      setLoading(true);
-      setError('');
-      setTranscript(null);
-
-      const videoId = extractVideoId(videoUrl);
-      if (!videoId) {
-        setError('Invalid YouTube URL');
-        return;
+      const data = await fetchTranscript(videoId);
+      if (data.details) {
+        setVideoDetails(data.details);
+        setTranscript(data.captions);
+      } else {
+        setError('Failed to fetch transcript');
       }
-
-      const data = await getTranscript(videoId);
-      setTranscript(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
     } finally {
@@ -42,72 +49,102 @@ export default function TranscriptPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0e16] text-white p-6 flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-center mb-2 text-white">
-        Turn YouTube Videos into <span className="text-pink-500">Transcripts Instantly</span>
-      </h1>
-      <p className="text-center text-gray-400 mb-6 max-w-lg">
-        Paste your video link and instantly extract the transcript!
-      </p>
-      <input
-        type="text"
-        placeholder="Paste your YouTube video link here"
-        value={videoUrl}
-        onChange={(e) => setVideoUrl(e.target.value)}
-        className="w-full max-w-xl p-3 rounded text-black"
-      />
-      <div className="flex gap-4 mt-4">
-        <button 
-          onClick={handleExtract} 
-          disabled={loading}
-          className="bg-pink-500 px-6 py-2 text-white rounded text-lg disabled:opacity-50"
-        >
-          {loading ? 'Extracting...' : 'Extract transcript'}
-        </button>
-        <button className="bg-gray-800 px-6 py-2 text-white rounded text-lg">
-          Extract in Bulk <span className="text-green-500 ml-1">New</span>
-        </button>
-      </div>
+    <div className={`min-h-screen ${
+      theme === 'light' 
+        ? 'bg-white text-gray-900' 
+        : 'bg-[#0f172a] text-white'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 pt-14">
+        <div className="flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex-1 text-left">
+            <h1 className="text-4xl lg:text-5xl font-bold mb-2">
+              Turn YouTube Videos into
+              <span className="block text-[#ff4571]">Transcripts Instantly</span>
+            </h1>
+            
+            <p className={`${
+              theme === 'light' ? 'text-gray-600' : 'text-gray-400'
+            } text-sm mb-4 max-w-xl`}>
+              Transform any YouTube video into accurate, time-stamped transcripts in a single click.
+            </p>
 
-      {error && (
-        <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
-          {error}
-        </div>
-      )}
+            <div className={`${
+              theme === 'light'
+                ? 'bg-gray-100'
+                : 'bg-white/5'
+            } p-6 rounded-xl backdrop-blur-sm mb-6`}>
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Paste your YouTube video link here"
+                className={`w-full px-4 py-3 rounded-lg ${
+                  theme === 'light'
+                    ? 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
+                    : 'bg-white/10 border-white/20 text-white placeholder-gray-400'
+                } border focus:outline-none focus:ring-2 focus:ring-[#6e76ff] focus:border-transparent text-sm mb-4`}
+              />
+              
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full px-6 py-3 rounded-lg font-medium text-white bg-[#ff4571] hover:opacity-90 transition-all disabled:opacity-50 text-sm"
+              >
+                {loading ? 'Processing...' : 'Extract transcript'}
+              </button>
 
-      {transcript && (
-        <div className="mt-6 w-full max-w-3xl space-y-4">
-          <div className="bg-[#1a1d2b] rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">{transcript.videoDetails.title}</h2>
-            <div className="flex gap-4 text-sm text-gray-400">
-              <span>Channel: {transcript.videoDetails.channelTitle}</span>
-              <span>•</span>
-              <span>Published: {new Date(transcript.videoDetails.publishedAt).toLocaleDateString()}</span>
+              {error && (
+                <div className="mt-4 text-red-500 text-sm">
+                  ❌ {error}
+                </div>
+              )}
+
+              {videoDetails && (
+                <div className={`mt-6 ${
+                  theme === 'light'
+                    ? 'bg-white'
+                    : 'bg-white/5'
+                } rounded-lg p-4`}>
+                  <div className="flex gap-4">
+                    <div className="relative group w-48 h-32 overflow-hidden rounded-lg">
+                      <img
+                        src={videoDetails.snippet.thumbnails.medium.url}
+                        alt="Video thumbnail"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <Play className="w-12 h-12 text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-2">{videoDetails.snippet.title}</h3>
+                      <p className="text-sm text-gray-500 mb-2">{videoDetails.snippet.channelTitle}</p>
+                      {transcript && (
+                        <div className="space-y-2 mt-4">
+                          {transcript.map((caption, index) => (
+                            <div key={index} className="text-sm">
+                              <span className="text-[#ff4571] font-medium">{caption.snippet.language}</span>
+                              <span className="ml-2">{caption.snippet.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="bg-[#1a1d2b] rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Available Captions</h3>
-            {transcript.captions.length > 0 ? (
-              <div className="space-y-3">
-                {transcript.captions.map((caption: any) => (
-                  <div key={caption.id} className="flex items-center justify-between p-3 bg-[#252837] rounded">
-                    <div>
-                      <p className="font-medium">{caption.snippet.language}</p>
-                      <p className="text-sm text-gray-400">{caption.snippet.trackKind}</p>
-                    </div>
-                    <button className="px-4 py-2 bg-pink-500 rounded hover:bg-pink-600 transition-colors">
-                      Download
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400">No captions available for this video</p>
-            )}
+          <div className="flex-1">
+            <img
+              src="/heroo.webp"
+              alt="Content Creator"
+              className="rounded-2xl w-full max-w-lg mx-auto object-cover"
+            />
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

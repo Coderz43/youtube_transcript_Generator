@@ -1,29 +1,40 @@
-const express = require('express');
-const cors = require('cors');
-const { YoutubeTranscript } = require('youtube-transcript-api');
+import express from 'express';
+import cors from 'cors';
+import fetch from 'node-fetch';
 
 const app = express();
-const port = 5000;
-
 app.use(cors());
-app.use(express.json());
 
-app.get('/transcript', async (req, res) => {
+app.get('/api/transcript', async (req, res) => {
   const { videoId } = req.query;
-  
-  if (!videoId) {
-    return res.status(400).json({ error: 'Missing videoId parameter' });
-  }
+  const API_KEY = 'AIzaSyBubHh4ttMSOc5WnZXnqQF-0S2wzCz7XJg';
 
   try {
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId);
-    res.json(transcript);
+    // First fetch video details
+    const detailsResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`
+    );
+    const detailsData = await detailsResponse.json();
+
+    if (!detailsData.items?.length) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+
+    // Then fetch captions
+    const captionsResponse = await fetch(
+      `https://youtube.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${API_KEY}`
+    );
+    const captionsData = await captionsResponse.json();
+
+    res.json({
+      details: detailsData.items[0],
+      captions: captionsData.items || []
+    });
   } catch (error) {
-    console.error('Error fetching transcript:', error);
-    res.status(500).json({ error: 'Failed to fetch transcript' });
+    console.error('API Error:', error);
+    res.status(500).json({ error: 'Failed to fetch video data' });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Backend server running on port ${port}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
