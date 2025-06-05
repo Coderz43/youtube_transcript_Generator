@@ -3,7 +3,7 @@ import cors from "cors";
 import { YoutubeTranscript } from "youtube-transcript";
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
@@ -22,6 +22,22 @@ app.get("/api/transcript", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+// Handle server startup with error handling
+const startServer = () => {
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`⚠️ Port ${PORT} is busy, trying again...`);
+      setTimeout(() => {
+        server.close();
+        PORT++;
+        startServer();
+      }, 1000);
+    } else {
+      console.error('❌ Server error:', err);
+    }
+  });
+};
+
+startServer();

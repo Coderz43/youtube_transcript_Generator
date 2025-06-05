@@ -7,10 +7,8 @@ services:
 
   - name: backend
     project_path: ./backend
-    install_command: pip install -r requirements.txt
-    start_command: python app.py
+    start_command: node index.js
     type: api
-    language: python
     proxy:
       path: /api
       target_port: 5000
