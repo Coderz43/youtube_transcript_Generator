@@ -7,6 +7,7 @@ services:
 
   - name: backend
     project_path: ./backend
+    install_command: npm install
     start_command: node index.js
     type: api
     proxy:
