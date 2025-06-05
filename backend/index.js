@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import pkg from 'youtube-transcript'; // ✅ Import entire CJS module
+import pkg from 'youtube-transcript';
 
-const { getTranscript } = pkg; // ✅ Extract method manually
+const { getTranscript } = pkg;
 
 const app = express();
 app.use(cors());

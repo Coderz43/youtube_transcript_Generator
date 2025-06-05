@@ -168,98 +168,118 @@ const formattedTranscript = transcriptData.map((line: any) => {
   ];
 
   return (
-    <div className={min-h-screen ${
-      theme === 'light' 
-        ? 'bg-white text-gray-900' 
-        : 'bg-[#0f172a] text-white'
-    }}>
-      {/* Top Navigation */}
-      <div className={fixed top-0 left-0 right-0 z-50 ${
+   <div className={`min-h-screen ${
+  theme === 'light'
+    ? 'bg-white text-gray-900'
+    : 'bg-[#0f172a] text-white'
+}`}>
+
+     {/* Top Navigation */}
+<div className={`fixed top-0 left-0 right-0 z-50 ${
+  theme === 'light'
+    ? 'bg-white/80'
+    : 'bg-[#0f172a]/80'
+} backdrop-blur-lg border-b ${
+  theme === 'light'
+    ? 'border-gray-200'
+    : 'border-white/10'
+}`}>
+<div className="max-w-7xl mx-auto px-4 py-2 flex justify-end items-center gap-6">
+  <a
+    href="#"
+    className={`${
+      theme === 'light'
+        ? 'text-gray-600 hover:text-gray-900'
+        : 'text-gray-400 hover:text-white'
+    } text-sm font-medium transition-colors`}
+  >
+    Pricing
+  </a>
+
+  <a
+    href="#"
+    className={`${
+      theme === 'light'
+        ? 'text-gray-600 hover:text-gray-900'
+        : 'text-gray-400 hover:text-white'
+    } text-sm font-medium transition-colors`}
+  >
+    API
+  </a>
+
+  <div className="relative">
+    <button
+      onClick={() => setIsBulkOpen(!isBulkOpen)}
+      className={`${
         theme === 'light'
-          ? 'bg-white/80'
-          : 'bg-[#0f172a]/80'
-      } backdrop-blur-lg border-b ${
+          ? 'text-gray-600 hover:text-gray-900'
+          : 'text-gray-400 hover:text-white'
+      } text-sm font-medium transition-colors flex items-center gap-1`}
+    >
+      Bulk
+      <ChevronDown className="w-4 h-4" />
+    </button>
+
+    {isBulkOpen && (
+      <div
+        className={`absolute top-full right-0 mt-2 w-48 ${
+          theme === 'light'
+            ? 'bg-white/80 text-gray-900'
+            : 'bg-white/10 text-white'
+        } backdrop-blur-lg rounded-lg shadow-lg py-2`}
+      >
+        <a
+          href="#"
+          className={`block px-4 py-2 text-sm ${
+            theme === 'light'
+              ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Extract from Playlist
+        </a>
+        <a
+          href="#"
+          className={`block px-4 py-2 text-sm ${
+            theme === 'light'
+              ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Extract from CSV
+        </a>
+      </div>
+    )}
+  </div>
+
+  <a
+    href="#"
+    className={`${
+      theme === 'light'
+        ? 'text-gray-600 hover:text-gray-900'
+        : 'text-gray-400 hover:text-white'
+    } text-sm font-medium transition-colors flex items-center gap-1`}
+  >
+    <img src="/icons8-discord-24.png" alt="Discord" className="w-5 h-5" />
+    Join us on Discord
+  </a>
+
+  <div className="relative">
+    <button
+      onClick={() => setIsThemeOpen(!isThemeOpen)}
+      className={`${
         theme === 'light'
-          ? 'border-gray-200'
-          : 'border-white/10'
-      }}>
-        <div className="max-w-7xl mx-auto px-4 py-2 flex justify-end items-center gap-6">
-          <a href="#" className={${
-            theme === 'light' 
-              ? 'text-gray-600 hover:text-gray-900' 
-              : 'text-gray-400 hover:text-white'
-          } text-sm font-medium transition-colors}>
-            Pricing
-          </a>
-          <a href="#" className={${
-            theme === 'light' 
-              ? 'text-gray-600 hover:text-gray-900' 
-              : 'text-gray-400 hover:text-white'
-          } text-sm font-medium transition-colors}>
-            API
-          </a>
-          <div className="relative">
-            <button
-              onClick={() => setIsBulkOpen(!isBulkOpen)}
-              className={${
-                theme === 'light' 
-                  ? 'text-gray-600 hover:text-gray-900' 
-                  : 'text-gray-400 hover:text-white'
-              } text-sm font-medium transition-colors flex items-center gap-1}
-            >
-              Bulk
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            {isBulkOpen && (
-              <div className={absolute top-full right-0 mt-2 w-48 ${
-                theme === 'light'
-                  ? 'bg-white/80 text-gray-900'
-                  : 'bg-white/10 text-white'
-              } backdrop-blur-lg rounded-lg shadow-lg py-2}>
-                <a href="#" className={block px-4 py-2 text-sm ${
-                  theme === 'light'
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }}>
-                  Extract from Playlist
-                </a>
-                <a href="#" className={block px-4 py-2 text-sm ${
-                  theme === 'light'
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }}>
-                  Extract from CSV
-                </a>
-              </div>
-            )}
-          </div>
-          <a 
-            href="#" 
-            className={${
-              theme === 'light' 
-                ? 'text-gray-600 hover:text-gray-900' 
-                : 'text-gray-400 hover:text-white'
-            } text-sm font-medium transition-colors flex items-center gap-1}
-          >
-            <img src="/icons8-discord-24.png" alt="Discord" className="w-5 h-5" />
-            Join us on Discord
-          </a>
-          <div className="relative">
-            <button
-              onClick={() => setIsThemeOpen(!isThemeOpen)}
-              className={${
-                theme === 'light'
-                  ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              } transition-colors p-2 rounded-lg}
-            >
-              {theme === 'light' ? (
-                <Sun className="w-5 h-5" />
-              ) : theme === 'dark' ? (
-                <Moon className="w-5 h-5" />
-              ) : (
-                <Laptop2 className="w-5 h-5" />
-              )}
+          ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+          : 'text-gray-400 hover:text-white hover:bg-white/5'
+      } transition-colors p-2 rounded-lg`}
+    >
+      {theme === 'light' ? (
+        <Sun className="w-5 h-5" />
+      ) : theme === 'dark' ? (
+        <Moon className="w-5 h-5" />
+      ) : (
+        <Laptop2 className="w-5 h-5" />
+      )}
             </button>
             {isThemeOpen && (
               <div className={absolute top-full right-0 mt-2 w-36 ${
