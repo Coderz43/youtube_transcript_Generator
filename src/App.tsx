@@ -1,23 +1,8 @@
+// App.tsx (Full Updated with Transcript Formatting & Styling)
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play, Search, MoreVertical } from 'lucide-react';
-import AdminRoutes from './pages/admin';
-import { useTheme } from './ThemeContext';
 import { fetchTranscript, extractVideoId } from './api/transcript';
-
-const categoryMap: { [key: string]: string } = {
-  '1': 'Film & Animation', '2': 'Autos & Vehicles', '10': 'Music',
-  '15': 'Pets & Animals', '17': 'Sports', '18': 'Short Movies',
-  '19': 'Travel & Events', '20': 'Gaming', '21': 'Videoblogging',
-  '22': 'People & Blogs', '23': 'Comedy', '24': 'Entertainment',
-  '25': 'News & Politics', '26': 'Howto & Style', '27': 'Education',
-  '28': 'Science & Technology', '29': 'Nonprofits & Activism',
-  '30': 'Movies', '31': 'Anime/Animation', '32': 'Action/Adventure',
-  '33': 'Classics', '34': 'Comedy', '35': 'Documentary',
-  '36': 'Drama', '37': 'Family', '38': 'Foreign', '39': 'Horror',
-  '40': 'Sci-Fi/Fantasy', '41': 'Thriller', '42': 'Shorts',
-  '43': 'Shows', '44': 'Trailers'
-};
+import { useTheme } from './ThemeContext';
+import { categoryMap } from './categoryMap';
 
 function convertISODuration(duration: string): string {
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -34,10 +19,7 @@ function MainLayout() {
   const { theme } = useTheme();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const [isBulkOpen, setIsBulkOpen] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [transcript, setTranscript] = useState<any[] | null>(null);
+  const [transcript, setTranscript] = useState<string[] | null>(null);
   const [error, setError] = useState('');
   const [videoDetails, setVideoDetails] = useState<{
     title: string;
@@ -63,19 +45,13 @@ function MainLayout() {
     }
 
     try {
-      // Fetch video details
-      const detailsResponse = await fetch(
+      const detailsRes = await fetch(
         `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
       );
-      const detailsData = await detailsResponse.json();
-
-      if (!detailsData.items?.length) {
-        setError('Video not found');
-        setLoading(false);
-        return;
-      }
-
+      const detailsData = await detailsRes.json();
+      if (!detailsData.items?.length) throw new Error('Video not found');
       const item = detailsData.items[0];
+
       setVideoDetails({
         title: item.snippet.title,
         thumbnail: item.snippet.thumbnails.medium.url,
@@ -86,24 +62,76 @@ function MainLayout() {
         duration: convertISODuration(item.contentDetails.duration)
       });
 
-      // Fetch transcript
-     const transcriptData = await fetchTranscript(videoId);
-
-// Format: "0:00 → This new software..."
-const formattedTranscript = transcriptData.map((line: any) => {
-  const minutes = Math.floor(line.start / 60);
-  const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds} → ${line.text}`;
-});
-
-setTranscript(formattedTranscript);
-
+      const data = await fetchTranscript(videoId);
+      const formatted = data.map((line: any) => {
+        const mins = Math.floor(line.start / 60);
+        const secs = Math.floor(line.start % 60).toString().padStart(2, '0');
+        return `${mins}:${secs} → ${line.text}`;
+      });
+      setTranscript(formatted);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch transcript');
     } finally {
       setLoading(false);
     }
   };
+
+  return (
+    <div className={`min-h-screen p-6 ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
+      <h1 className="text-2xl font-bold mb-4">YouTube Transcript Generator</h1>
+      <input
+        type="text"
+        className="w-full p-3 border rounded text-black"
+        placeholder="Paste YouTube URL here..."
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="mt-4 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+      >
+        {loading ? 'Loading...' : 'Get Transcript'}
+      </button>
+
+      {error && <p className="text-red-500 mt-4">{error}</p>}
+
+      {videoDetails && (
+        <div className="mt-6 flex gap-4 items-start">
+          <img src={videoDetails.thumbnail} alt="thumbnail" className="rounded-lg w-48 h-32 object-cover" />
+          <div>
+            <h2 className="text-lg font-semibold">{videoDetails.title}</h2>
+            <p>Channel: {videoDetails.channel}</p>
+            <p>Category: {videoDetails.category}</p>
+            <p>Duration: {videoDetails.duration}</p>
+            <p>Video ID: {videoDetails.videoId}</p>
+            <p>Channel ID: {videoDetails.channelId}</p>
+          </div>
+        </div>
+      )}
+
+      {transcript && (
+        <>
+          <button
+            className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={() => navigator.clipboard.writeText(transcript.join('\n'))}
+          >
+            📋 Copy Transcript
+          </button>
+
+          <div className="mt-4 bg-gray-800 p-4 rounded max-h-[400px] overflow-y-auto text-sm">
+            {transcript.map((line, i) => (
+              <p key={i} className="mb-1 text-white font-mono">{line}</p>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default MainLayout;
+
 
   const themes = [
     { id: 'light', label: 'Light', Icon: Sun },
