@@ -1,25 +1,18 @@
 const express = require('express');
-const cors = require('cors');
-const { YoutubeTranscript } = require('youtube-transcript');
-
+const fetch = require('node-fetch');
 const app = express();
+const cors = require('cors');
 app.use(cors());
 
 app.get('/api/transcript', async (req, res) => {
-  const videoId = req.query.video_id;
-  if (!videoId) {
-    return res.status(400).json({ error: "Missing video_id" });
-  }
-
-  try {
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId);
-    res.json(transcript);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const { videoId } = req.query;
+  const API_KEY = 'AIzaSyANRCCflhkR80NTq8Vs_zyxoc35f-dmMo';
+  const url = `https://youtube.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${API_KEY}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  res.json(data);
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(3001, () => {
+  console.log("Backend running on port 3001");
 });
