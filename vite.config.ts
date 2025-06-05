@@ -7,14 +7,12 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
-    port: 5173,
-    host: true,
+    port: 5173, // 🔒 explicitly define frontend port
     proxy: {
       '/api': {
-        target: 'http://3001-zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--6ba59070.local-credentialless.webcontainer-api.io',
+        target: 'http://localhost:3001', // ✅ updated from 5000 → 3001
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''), // ✅ CORRECT CLOSING
+        // Removed the rewrite rule to preserve the /api prefix
       },
     },
   },
