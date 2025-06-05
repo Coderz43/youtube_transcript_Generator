@@ -4,15 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run api\" \"vite --host --port=5173\"",
-    "start": "vite --port=5173",
+    "dev": "vite --port=5173",
+    "api": "node backend/index.js",
+    "start": "concurrently \"npm run api\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "api": "node backend/index.js"
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
