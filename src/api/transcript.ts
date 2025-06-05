@@ -1,15 +1,3 @@
-import { getTranscript } from './getTranscript';
-
-export const fetchTranscript = async (videoId: string) => {
-  try {
-    const data = await getTranscript(videoId);
-    return data;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-};
-
 export const extractVideoId = (url: string): string | null => {
   try {
     const urlObj = new URL(url);
@@ -30,5 +18,16 @@ export const extractVideoId = (url: string): string | null => {
     return null;
   } catch {
     return null;
+  }
+};
+
+export const fetchTranscript = async (videoId: string) => {
+  try {
+    const response = await fetch(`/api/transcript?video_id=${videoId}`);
+    if (!response.ok) throw new Error("Failed to fetch transcript");
+    return await response.json();
+  } catch (err) {
+    console.error(err);
+    throw err;
   }
 };
