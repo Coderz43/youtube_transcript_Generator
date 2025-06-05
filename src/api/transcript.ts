@@ -1,14 +1,32 @@
-// src/api/transcript.ts
+export function extractVideoId(url: string): string {
+  // Handle various YouTube URL formats
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\n/]+)/,
+    /youtube\.com\/shorts\/([^&?\n/]+)/
+  ];
 
-// Extract video ID from YouTube URL
-export function extractVideoId(url: string): string | null {
-  const match = url.match(/v=([\w-]{11})/);
-  return match ? match[1] : null;
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  throw new Error('Invalid YouTube URL format');
 }
 
-// Fetch transcript from backend API
 export async function fetchTranscript(videoId: string) {
-  const response = await fetch(`/api/transcript?videoId=${videoId}`);
-  const data = await response.json();
-  return Array.isArray(data) ? data : [];
+  const res = await fetch(`/api/transcript?videoId=${videoId}`);
+
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new Error("Transcript API did not return JSON");
+  }
+
+  const data = await res.json();
+  if (!data || !Array.isArray(data)) {
+    throw new Error("Invalid transcript format received");
+  }
+
+  return data;
 }
