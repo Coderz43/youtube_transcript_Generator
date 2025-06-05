@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { getTranscript } from 'youtube-transcript'; // ✅ FIXED IMPORT
+import ytTranscript from 'youtube-transcript'; // ✅ Correct CommonJS default import
+const getTranscript = ytTranscript.getTranscript; // ✅ Access named method manually
 
 const app = express();
 app.use(cors());
