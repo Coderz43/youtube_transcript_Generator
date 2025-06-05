@@ -11,7 +11,7 @@ export default defineConfig({
     host: true,
   proxy: {
   '/api': {
-    target: 'http://localhost:5173', // or full Bolt backend URL
+    target: 'https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--6ba59070.local-credentialless.webcontainer-api.io/', // or full Bolt backend URL
     changeOrigin: true,
     secure: false
         
