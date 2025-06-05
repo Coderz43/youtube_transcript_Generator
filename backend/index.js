@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { getTranscript } from 'youtube-transcript'; // <--- YAHAN CHANGE KAREIN
+import { getTranscript } from 'youtube-transcript'; 
 
 const app = express();
 app.use(cors());
