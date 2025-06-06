@@ -31,7 +31,7 @@ function convertISODuration(duration: string): string {
 }
 
 function MainLayout() {
-  const { theme } = useTheme();
+ const { theme, setTheme } = useTheme();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
