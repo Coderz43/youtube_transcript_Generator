@@ -98,10 +98,10 @@ function MainLayout() {
 const transcriptData = await response.json();
 
       const formattedTranscript = transcriptData.map((line: any) => {
-        const minutes = Math.floor(line.start / 60);
-        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
-        return `${minutes}:${seconds} → ${line.text}`;
-      });
+  const minutes = Math.floor(line.start / 60);
+  const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+  return `${minutes}:${seconds} → ${line.transcript}`;
+});
 
       setTranscript(formattedTranscript);
     } catch (err) {
