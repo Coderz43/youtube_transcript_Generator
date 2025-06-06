@@ -10,9 +10,9 @@ export default defineConfig({
     port: 5173, // 🔒 explicitly define frontend port
     proxy: {
       '/api': {
-        target: 'http://localhost:3001', // ✅ updated from 5000 → 3001
+        target: 'http://backend:3001', // ✅ use Bolt backend service name instead of localhost
         changeOrigin: true,
-        // Removed the rewrite rule to preserve the /api prefix
+        // No rewrite needed; /api will be forwarded directly
       },
     },
   },
