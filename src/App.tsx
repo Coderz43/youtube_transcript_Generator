@@ -87,12 +87,15 @@ function MainLayout() {
       });
 
       // Fetch transcript
-      const transcriptData = await fetchTranscript(videoId);
-      if (!transcriptData.length) {
-        setError('No transcript available for this video');
-        setLoading(false);
-        return;
-      }
+     const response = await fetch('/api/transcript', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    audioUrl: `https://download-url.com/${videoId}.mp4` // replace with dynamic audio URL
+  }),
+});
+
+const transcriptData = await response.json();
 
       const formattedTranscript = transcriptData.map((line: any) => {
         const minutes = Math.floor(line.start / 60);
