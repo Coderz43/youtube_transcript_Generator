@@ -17,21 +17,19 @@ app.get('/api/transcript', async (req, res) => {
   try {
     const transcript = await getTranscript(videoId);
 
-    // ✅ if empty or unexpected, fallback gracefully
     if (!Array.isArray(transcript)) {
-      console.warn('⚠️ Invalid format:', transcript);
-      return res.status(200).json([]);
+      console.warn('⚠️ Invalid transcript format:', transcript);
+      return res.status(200).json([]); // always return JSON
     }
 
-    res.setHeader('Content-Type', 'application/json');
     res.status(200).json(transcript);
   } catch (err) {
-    console.error('❌ Transcript fetch failed:', err.message);
-    
-    // ✅ Always return valid JSON (even if failed)
+    console.error('❌ getTranscript failed:', err.message);
+    // prevent crashing backend
     res.status(200).json([]);
   }
 });
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
