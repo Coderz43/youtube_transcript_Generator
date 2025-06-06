@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { FileText, Languages, Youtube, Wand2, Users, BookOpen, Mic2, GraduationCap, CheckCircle2, ChevronDown, ChevronRight, Sun, Moon, Laptop2, History, PlaySquare, List, Table, Apple as Api, UserCircle, Clock, Play, Search, MoreVertical } from 'lucide-react';
 import AdminRoutes from './pages/admin';
+import Pricing from './pages/Pricing';
+import API from './pages/API';
+import Bulk from './pages/Bulk';
+import Discord from './pages/Discord';
 import { useTheme } from './ThemeContext';
 import { fetchTranscript, extractVideoId } from './api/transcript';
 
@@ -184,18 +188,28 @@ function MainLayout() {
           : 'border-white/10'
       }`}>
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-end items-center gap-6">
-          <a href="#" className={`${
-            theme === 'light' 
-              ? 'text-gray-600 hover:text-gray-900' 
-              : 'text-gray-400 hover:text-white'
-          } text-sm font-medium transition-colors`}>
+          <a 
+            href="/pricing" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${
+              theme === 'light' 
+                ? 'text-gray-600 hover:text-gray-900' 
+                : 'text-gray-400 hover:text-white'
+            } text-sm font-medium transition-colors`}
+          >
             Pricing
           </a>
-          <a href="#" className={`${
-            theme === 'light' 
-              ? 'text-gray-600 hover:text-gray-900' 
-              : 'text-gray-400 hover:text-white'
-          } text-sm font-medium transition-colors`}>
+          <a 
+            href="/api" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${
+              theme === 'light' 
+                ? 'text-gray-600 hover:text-gray-900' 
+                : 'text-gray-400 hover:text-white'
+            } text-sm font-medium transition-colors`}
+          >
             API
           </a>
           <div className="relative">
@@ -216,25 +230,37 @@ function MainLayout() {
                   ? 'bg-white/80 text-gray-900'
                   : 'bg-white/10 text-white'
               } backdrop-blur-lg rounded-lg shadow-lg py-2`}>
-                <a href="#" className={`block px-4 py-2 text-sm ${
-                  theme === 'light'
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}>
+                <a 
+                  href="/bulk" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`block px-4 py-2 text-sm ${
+                    theme === 'light'
+                      ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
                   Extract from Playlist
                 </a>
-                <a href="#" className={`block px-4 py-2 text-sm ${
-                  theme === 'light'
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}>
+                <a 
+                  href="/bulk" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`block px-4 py-2 text-sm ${
+                    theme === 'light'
+                      ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
                   Extract from CSV
                 </a>
               </div>
             )}
           </div>
           <a 
-            href="#" 
+            href="/discord" 
+            target="_blank"
+            rel="noopener noreferrer"
             className={`${
               theme === 'light' 
                 ? 'text-gray-600 hover:text-gray-900' 
@@ -798,6 +824,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/admin/*" element={<AdminRoutes />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/api" element={<API />} />
+        <Route path="/bulk" element={<Bulk />} />
+        <Route path="/discord" element={<Discord />} />
         <Route path="/*" element={<MainLayout />} />
       </Routes>
     </BrowserRouter>
