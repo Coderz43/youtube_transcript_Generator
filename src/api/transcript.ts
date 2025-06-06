@@ -2,7 +2,6 @@ export async function fetchTranscript(videoId: string) {
   try {
     const res = await fetch(`/api/transcript?videoId=${videoId}`);
 
-    // ✅ If the response is not OK (like 500), log and return empty array
     if (!res.ok) {
       const errorText = await res.text().catch(() => 'Unknown error');
       console.warn(`Transcript API error (status ${res.status}):`, errorText);
@@ -11,19 +10,27 @@ export async function fetchTranscript(videoId: string) {
 
     const contentType = res.headers.get("content-type") || '';
     if (!contentType.includes("application/json")) {
-      const text = await res.text(); // might be HTML or plain text
-      console.warn("Transcript API did not return JSON. Raw output:", text);
+      const raw = await res.text();
+      console.warn("Transcript API did not return JSON. Raw output:", raw);
       return [];
     }
 
     const data = await res.json();
 
-    if (!data || !Array.isArray(data)) {
-      console.warn("Invalid transcript format. Expected array, got:", data);
-      return [];
+    if (Array.isArray(data)) {
+      return data;
+    } else if (typeof data === 'object' && data.predictions) {
+      // Handle Gladia format
+      const transcriptText = data.predictions[0]?.transcription;
+      const lines = transcriptText?.split('\n').filter(Boolean).map((text, index) => {
+        const timestamp = `${Math.floor(index / 60)}:${String(index % 60).padStart(2, '0')}`;
+        return `${timestamp} → ${text}`;
+      });
+      return lines || [];
     }
 
-    return data;
+    console.warn("Invalid transcript structure:", data);
+    return [];
   } catch (err) {
     console.error("❌ Failed to fetch transcript:", err);
     return [];
@@ -31,7 +38,6 @@ export async function fetchTranscript(videoId: string) {
 }
 
 export function extractVideoId(url: string): string | null {
-  // Supports various YouTube formats like https://www.youtube.com/watch?v=xxxx and https://youtu.be/xxxx
   const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([0-9A-Za-z_-]{11})/;
   const match = url.match(regex);
   return match ? match[1] : null;
