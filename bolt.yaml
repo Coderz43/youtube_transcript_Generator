@@ -13,4 +13,4 @@ services:
     proxy:
       path: /api
       target_port: 3001
-    hidden: true
+    hidden
