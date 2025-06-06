@@ -1,42 +1,39 @@
 import express from 'express';
 import cors from 'cors';
-import axios from 'axios';
-import * as dotenv from 'dotenv';
+import pkg from 'youtube-transcript';
 
-dotenv.config();
+const { getTranscript } = pkg;
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
-// POST endpoint for Gladia transcription
-app.post('/api/transcript', async (req, res) => {
-  const { audioUrl } = req.body;
+app.get('/api/transcript', async (req, res) => {
+  const videoId = req.query.videoId;
 
-  if (!audioUrl) return res.status(400).json({ error: 'Missing audioUrl' });
+  if (!videoId || typeof videoId !== 'string') {
+    return res.status(400).json({ error: 'Missing or invalid videoId' });
+  }
 
   try {
-    const response = await axios.post(
-      'https://api.gladia.io/audio/text/audio-transcription/',
-      { audio_url: audioUrl },
-      {
-        headers: {
-          'x-gladia-key': process.env.GLADIA_API_KEY,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const transcript = await getTranscript(videoId);
 
-    // ✅ Double-check this is JSON before returning
-    if (typeof response.data !== 'object') {
-      return res.status(500).json({ error: 'Invalid Gladia response format' });
+    // ✅ if empty or unexpected, fallback gracefully
+    if (!Array.isArray(transcript)) {
+      console.warn('⚠️ Invalid format:', transcript);
+      return res.status(200).json([]);
     }
 
-    res.json(response.data);
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(transcript);
   } catch (err) {
-    console.error('Gladia API Error:', err.response?.data || err.message);
-
-    // ✅ Always return a JSON object, even in error
-    res.status(500).json({ error: 'Gladia API failed', details: err.message });
+    console.error('❌ Transcript fetch failed:', err.message);
+    
+    // ✅ Always return valid JSON (even if failed)
+    res.status(200).json([]);
   }
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(✅ Backend running at http://localhost:${PORT});
 });
