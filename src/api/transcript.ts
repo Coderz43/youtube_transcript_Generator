@@ -1,28 +1,33 @@
 export async function fetchTranscript(videoId: string) {
-  const res = await fetch(`/api/transcript?videoId=${videoId}`);
+  try {
+    const res = await fetch(`/api/transcript?videoId=${videoId}`);
 
-  // First check if the response was successful
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => null);
-    const errorMessage = errorData?.message || `HTTP error! status: ${res.status}`;
-    throw new Error(errorMessage);
+    // ✅ If the response is not OK (like 500), log and return empty array
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => 'Unknown error');
+      console.warn(`Transcript API error (status ${res.status}):`, errorText);
+      return [];
+    }
+
+    const contentType = res.headers.get("content-type") || '';
+    if (!contentType.includes("application/json")) {
+      const text = await res.text(); // might be HTML or plain text
+      console.warn("Transcript API did not return JSON. Raw output:", text);
+      return [];
+    }
+
+    const data = await res.json();
+
+    if (!data || !Array.isArray(data)) {
+      console.warn("Invalid transcript format. Expected array, got:", data);
+      return [];
+    }
+
+    return data;
+  } catch (err) {
+    console.error("❌ Failed to fetch transcript:", err);
+    return [];
   }
-
-  const contentType = res.headers.get("content-type") || '';
-  if (!contentType.includes("application/json")) {
-    const text = await res.text(); // capture HTML error
-    console.error("Transcript Error Response:", text);
-    throw new Error("Transcript API did not return JSON");
-  }
-
-  const data = await res.json();
-
-  if (!data || !Array.isArray(data)) {
-    console.error("Invalid transcript data received:", data);
-    throw new Error("Invalid transcript format - Expected an array of transcript segments");
-  }
-
-  return data;
 }
 
 export function extractVideoId(url: string): string | null {
