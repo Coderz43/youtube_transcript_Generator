@@ -65,7 +65,7 @@ function MainLayout() {
     try {
       // Fetch video details
       const detailsResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo`
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyBubHh4ttMSOc5WnZXnqQF-0S2wzCz7XJg`
       );
       const detailsData = await detailsResponse.json();
 
