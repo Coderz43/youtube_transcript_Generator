@@ -24,9 +24,9 @@ function convertISODuration(duration: string): string {
   if (!match) return '';
   const [, hours, minutes, seconds] = match.map(v => parseInt(v || '0', 10));
   const parts = [];
-  if (hours) parts.push(`${hours}h`);
-  if (minutes) parts.push(`${minutes}m`);
-  if (seconds) parts.push(`${seconds}s`);
+  if (hours) parts.push(${hours}h);
+  if (minutes) parts.push(${minutes}m);
+  if (seconds) parts.push(${seconds}s);
   return parts.join(' ') || '0s';
 }
 
@@ -65,7 +65,7 @@ function MainLayout() {
     try {
       // Fetch video details
       const detailsResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyChKJVeOgpmFC0cKaEZRNhCLSRE9iq5A44`
+        https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=AIzaSyANRCCfIhkR80NTq8VS_ryxoc35f--dmMo
       );
       const detailsData = await detailsResponse.json();
 
@@ -87,21 +87,18 @@ function MainLayout() {
       });
 
       // Fetch transcript
-     const response = await fetch('/api/transcript', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    audioUrl: `https://download-url.com/${videoId}.mp4` // replace with dynamic audio URL
-  }),
-});
-
-const transcriptData = await response.json();
+      const transcriptData = await fetchTranscript(videoId);
+      if (!transcriptData.length) {
+        setError('No transcript available for this video');
+        setLoading(false);
+        return;
+      }
 
       const formattedTranscript = transcriptData.map((line: any) => {
-  const minutes = Math.floor(line.start / 60);
-  const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds} → ${line.transcript}`;
-});
+        const minutes = Math.floor(line.start / 60);
+        const seconds = Math.floor(line.start % 60).toString().padStart(2, '0');
+        return ${minutes}:${seconds} → ${line.text};
+      });
 
       setTranscript(formattedTranscript);
     } catch (err) {
@@ -171,13 +168,13 @@ const transcriptData = await response.json();
   ];
 
   return (
-    <div className={`min-h-screen ${
+    <div className={min-h-screen ${
       theme === 'light' 
         ? 'bg-white text-gray-900' 
         : 'bg-[#0f172a] text-white'
-    }`}>
+    }}>
       {/* Top Navigation */}
-      <div className={`fixed top-0 left-0 right-0 z-50 ${
+      <div className={fixed top-0 left-0 right-0 z-50 ${
         theme === 'light'
           ? 'bg-white/80'
           : 'bg-[#0f172a]/80'
@@ -185,52 +182,52 @@ const transcriptData = await response.json();
         theme === 'light'
           ? 'border-gray-200'
           : 'border-white/10'
-      }`}>
+      }}>
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-end items-center gap-6">
-          <a href="#" className={`${
+          <a href="#" className={${
             theme === 'light' 
               ? 'text-gray-600 hover:text-gray-900' 
               : 'text-gray-400 hover:text-white'
-          } text-sm font-medium transition-colors`}>
+          } text-sm font-medium transition-colors}>
             Pricing
           </a>
-          <a href="#" className={`${
+          <a href="#" className={${
             theme === 'light' 
               ? 'text-gray-600 hover:text-gray-900' 
               : 'text-gray-400 hover:text-white'
-          } text-sm font-medium transition-colors`}>
+          } text-sm font-medium transition-colors}>
             API
           </a>
           <div className="relative">
             <button
               onClick={() => setIsBulkOpen(!isBulkOpen)}
-              className={`${
+              className={${
                 theme === 'light' 
                   ? 'text-gray-600 hover:text-gray-900' 
                   : 'text-gray-400 hover:text-white'
-              } text-sm font-medium transition-colors flex items-center gap-1`}
+              } text-sm font-medium transition-colors flex items-center gap-1}
             >
               Bulk
               <ChevronDown className="w-4 h-4" />
             </button>
             {isBulkOpen && (
-              <div className={`absolute top-full right-0 mt-2 w-48 ${
+              <div className={absolute top-full right-0 mt-2 w-48 ${
                 theme === 'light'
                   ? 'bg-white/80 text-gray-900'
                   : 'bg-white/10 text-white'
-              } backdrop-blur-lg rounded-lg shadow-lg py-2`}>
-                <a href="#" className={`block px-4 py-2 text-sm ${
+              } backdrop-blur-lg rounded-lg shadow-lg py-2}>
+                <a href="#" className={block px-4 py-2 text-sm ${
                   theme === 'light'
                     ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}>
+                }}>
                   Extract from Playlist
                 </a>
-                <a href="#" className={`block px-4 py-2 text-sm ${
+                <a href="#" className={block px-4 py-2 text-sm ${
                   theme === 'light'
                     ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}>
+                }}>
                   Extract from CSV
                 </a>
               </div>
@@ -238,11 +235,11 @@ const transcriptData = await response.json();
           </div>
           <a 
             href="#" 
-            className={`${
+            className={${
               theme === 'light' 
                 ? 'text-gray-600 hover:text-gray-900' 
                 : 'text-gray-400 hover:text-white'
-            } text-sm font-medium transition-colors flex items-center gap-1`}
+            } text-sm font-medium transition-colors flex items-center gap-1}
           >
             <img src="/icons8-discord-24.png" alt="Discord" className="w-5 h-5" />
             Join us on Discord
@@ -250,11 +247,11 @@ const transcriptData = await response.json();
           <div className="relative">
             <button
               onClick={() => setIsThemeOpen(!isThemeOpen)}
-              className={`${
+              className={${
                 theme === 'light'
                   ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
-              } transition-colors p-2 rounded-lg`}
+              } transition-colors p-2 rounded-lg}
             >
               {theme === 'light' ? (
                 <Sun className="w-5 h-5" />
@@ -265,18 +262,18 @@ const transcriptData = await response.json();
               )}
             </button>
             {isThemeOpen && (
-              <div className={`absolute top-full right-0 mt-2 w-36 ${
+              <div className={absolute top-full right-0 mt-2 w-36 ${
                 theme === 'light'
                   ? 'bg-white/80 text-gray-900'
                   : 'bg-white/10 text-white'
-              } backdrop-blur-lg rounded-lg shadow-lg py-2`}>
+              } backdrop-blur-lg rounded-lg shadow-lg py-2}>
                 {themes.map((themeOption) => (
                   <button
                     key={themeOption.id}
                     onClick={() => {
                       setIsThemeOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${
+                    className={w-full flex items-center gap-2 px-4 py-2 text-sm ${
                       theme === themeOption.id 
                         ? theme === 'light'
                           ? 'text-gray-900 bg-gray-100'
@@ -284,7 +281,7 @@ const transcriptData = await response.json();
                         : theme === 'light'
                           ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                           : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
+                    }}
                   >
                     <themeOption.Icon className="w-4 h-4" />
                     {themeOption.label}
@@ -297,11 +294,11 @@ const transcriptData = await response.json();
       </div>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-[60px] hover:w-[240px] ${
+      <div className={fixed inset-y-0 left-0 z-40 w-[60px] hover:w-[240px] ${
         theme === 'light'
           ? 'bg-gray-100/80'
           : 'bg-white/5'
-      } backdrop-blur-lg transition-all duration-300 ease-in-out group`}>
+      } backdrop-blur-lg transition-all duration-300 ease-in-out group}>
         <div className="flex-1 p-3">
           <nav>
             <ul className="space-y-4">
@@ -309,7 +306,7 @@ const transcriptData = await response.json();
                 <li key={index}>
                   <a 
                     href="#" 
-                    className={`relative flex items-center gap-3 py-2 px-3 rounded-lg transition-colors ${
+                    className={relative flex items-center gap-3 py-2 px-3 rounded-lg transition-colors ${
                       index === 0 
                         ? theme === 'light'
                           ? 'text-gray-900 font-semibold mb-6'
@@ -317,15 +314,15 @@ const transcriptData = await response.json();
                         : theme === 'light'
                           ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
                           : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
+                    }}
                   >
                     <div className="relative group/tooltip">
                       {item.icon}
-                      <div className={`absolute left-full ml-2 px-2 py-1 ${
+                      <div className={absolute left-full ml-2 px-2 py-1 ${
                         theme === 'light'
                           ? 'bg-gray-800 text-white'
                           : 'bg-gray-800 text-white'
-                      } text-xs rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 whitespace-nowrap pointer-events-none`}>
+                      } text-xs rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 whitespace-nowrap pointer-events-none}>
                         {item.description}
                       </div>
                     </div>
@@ -345,26 +342,26 @@ const transcriptData = await response.json();
         </div>
         
         {/* Profile at bottom */}
-        <div className={`absolute bottom-0 left-0 right-0 p-3 border-t ${
+        <div className={absolute bottom-0 left-0 right-0 p-3 border-t ${
           theme === 'light'
             ? 'border-gray-200'
             : 'border-white/10'
-        }`}>
+        }}>
           <a 
             href="#" 
-            className={`flex items-center gap-3 py-2 px-3 rounded-lg ${
+            className={flex items-center gap-3 py-2 px-3 rounded-lg ${
               theme === 'light'
                 ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
-            } transition-colors`}
+            } transition-colors}
           >
             <div className="relative group/tooltip">
               <UserCircle className="w-5 h-5" />
-              <div className={`absolute left-full ml-2 px-2 py-1 ${
+              <div className={absolute left-full ml-2 px-2 py-1 ${
                 theme === 'light'
                   ? 'bg-gray-800 text-white'
                   : 'bg-gray-800 text-white'
-              } text-xs rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 whitespace-nowrap pointer-events-none`}>
+              } text-xs rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 whitespace-nowrap pointer-events-none}>
                 Manage your profile
               </div>
             </div>
@@ -386,27 +383,27 @@ const transcriptData = await response.json();
                 <span className="block text-[#ff4571]">Transcripts Instantly</span>
               </h1>
               
-              <p className={`${
+              <p className={${
                 theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-              } text-sm mb-4 max-w-xl`}>
+              } text-sm mb-4 max-w-xl}>
                 Transform any YouTube video into accurate, time-stamped transcripts in a single click. Start with 25 complimentary credits and experience professional-grade results instantly.
               </p>
 
-              <div className={`${
+              <div className={${
                 theme === 'light'
                   ? 'bg-gray-100'
                   : 'bg-white/5'
-              } p-6 rounded-xl backdrop-blur-sm mb-6`}>
+              } p-6 rounded-xl backdrop-blur-sm mb-6}>
                 <input
                   type="text"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="Paste your YouTube video link here"
-                  className={`w-full px-4 py-3 rounded-lg ${
+                  className={w-full px-4 py-3 rounded-lg ${
                     theme === 'light'
                       ? 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
                       : 'bg-white/10 border-white/20 text-white placeholder-gray-400'
-                  } border focus:outline-none focus:ring-2 focus:ring-[#6e76ff] focus:border-transparent text-sm mb-4`}
+                  } border focus:outline-none focus:ring-2 focus:ring-[#6e76ff] focus:border-transparent text-sm mb-4}
                 />
                 
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -418,11 +415,11 @@ const transcriptData = await response.json();
                     {loading ? 'Processing...' : 'Extract transcript'}
                   </button>
                   
-                  <button className={`px-6 py-3 rounded-lg font-medium ${
+                  <button className={px-6 py-3 rounded-lg font-medium ${
                     theme === 'light'
                       ? 'text-gray-900 bg-white hover:bg-gray-50'
                       : 'text-white bg-white/10 hover:bg-white/20'
-                  } transition-all text-sm`}>
+                  } transition-all text-sm}>
                     Extract in Bulk
                     <span className="ml-2 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">New</span>
                   </button>
@@ -435,11 +432,11 @@ const transcriptData = await response.json();
                 )}
 
                 {videoDetails && (
-                  <div className={`mt-6 ${
+                  <div className={mt-6 ${
                     theme === 'light'
                       ? 'bg-white'
                       : 'bg-white/5'
-                  } rounded-lg p-4`}>
+                  } rounded-lg p-4}>
                     <div className="flex gap-4">
                       {/* Updated thumbnail with always-visible play button */}
                       <div className="relative group w-48 h-32 overflow-hidden rounded-lg">
@@ -456,7 +453,7 @@ const transcriptData = await response.json();
                         <button
                           onClick={() =>
                             window.open(
-                              `https://www.youtube.com/watch?v=${videoDetails.videoId}`,
+                              https://www.youtube.com/watch?v=${videoDetails.videoId},
                               '_blank'
                             )
                           }
@@ -470,7 +467,7 @@ const transcriptData = await response.json();
                         <button
                           onClick={() =>
                             window.open(
-                              `https://www.youtube.com/watch?v=${videoDetails.videoId}`,
+                              https://www.youtube.com/watch?v=${videoDetails.videoId},
                               '_blank'
                             )
                           }
@@ -482,36 +479,36 @@ const transcriptData = await response.json();
                         </button>
                         <p className="text-sm text-gray-500 mb-2">{videoDetails.channel}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          <div className={`p-2 rounded-lg ${
+                          <div className={p-2 rounded-lg ${
                             theme === 'light'
                               ? 'bg-gray-100'
                               : 'bg-white/10'
-                          }`}>
+                          }}>
                             <p className="text-xs text-gray-500">Video ID</p>
                             <p className="text-sm font-mono truncate">{videoDetails.videoId}</p>
                           </div>
-                          <div className={`p-2 rounded-lg ${
+                          <div className={p-2 rounded-lg ${
                             theme === 'light'
                               ? 'bg-gray-100'
                               : 'bg-white/10'
-                          }`}>
+                          }}>
                             <p className="text-xs text-gray-500">Channel ID</p>
                             <p className="text-sm font-mono truncate">{videoDetails.channelId}</p>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          <span className={`text-xs px-2 py-1 rounded-full ${
+                          <span className={text-xs px-2 py-1 rounded-full ${
                             theme === 'light'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-blue-500/20 text-blue-400'
-                          }`}>
+                          }}>
                             {videoDetails.category}
                           </span>
-                          <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
+                          <span className={text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
                             theme === 'light'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-green-500/20 text-green-400'
-                          }`}>
+                          }}>
                             <Clock className="w-3 h-3" />
                             {videoDetails.duration}
                           </span>
@@ -522,30 +519,30 @@ const transcriptData = await response.json();
                 )}
 
                 {transcript && (
-                  <div className={`mt-6 ${
+                  <div className={mt-6 ${
                     theme === 'light'
                       ? 'bg-white'
                       : 'bg-white/5'
-                  } rounded-lg p-4`}>
+                  } rounded-lg p-4}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <input
                             type="text"
                             placeholder="Search Transcript"
-                            className={`pl-9 pr-4 py-2 rounded-lg ${
+                            className={pl-9 pr-4 py-2 rounded-lg ${
                               theme === 'light'
                                 ? 'bg-gray-100 text-gray-900'
                                 : 'bg-white/10 text-white'
-                            } border-0 focus:ring-2 focus:ring-[#ff4571] text-sm w-64`}
+                            } border-0 focus:ring-2 focus:ring-[#ff4571] text-sm w-64}
                           />
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         </div>
-                        <select className={`px-3 py-2 rounded-lg ${
+                        <select className={px-3 py-2 rounded-lg ${
                           theme === 'light'
                             ? 'bg-gray-100 text-gray-900'
                             : 'bg-white/10 text-white'
-                        } border-0 text-sm`}>
+                        } border-0 text-sm}>
                           <option>English (auto-generated)</option>
                         </select>
                       </div>
@@ -557,36 +554,36 @@ const transcriptData = await response.json();
                           <FileText className="w-4 h-4" />
                           Copy Transcript
                         </button>
-                        <button className={`p-2 rounded-lg ${
+                        <button className={p-2 rounded-lg ${
                           theme === 'light'
                             ? 'hover:bg-gray-100'
                             : 'hover:bg-white/10'
-                        }`}>
+                        }}>
                           <MoreVertical className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
-                    <div className={`max-h-[400px] overflow-y-auto rounded-lg ${
+                    <div className={max-h-[400px] overflow-y-auto rounded-lg ${
                       theme === 'light'
                         ? 'bg-gray-50'
                         : 'bg-white/5'
-                    } p-4 space-y-4`}>
+                    } p-4 space-y-4}>
                       {transcript.map((line, index) => {
                         const [timestamp, text] = line.split(' → ');
                         return (
                           <div key={index} className="flex gap-4">
-                            <span className={`${
+                            <span className={${
                               theme === 'light'
                                 ? 'text-[#ff4571]'
                                 : 'text-[#ff6b8b]'
-                            } font-medium whitespace-nowrap`}>
+                            } font-medium whitespace-nowrap}>
                               {timestamp}
                             </span>
-                            <p className={`${
+                            <p className={${
                               theme === 'light'
                                 ? 'text-gray-700'
                                 : 'text-gray-300'
-                            }`}>
+                            }}>
                               {text}
                             </p>
                           </div>
@@ -643,23 +640,23 @@ const transcriptData = await response.json();
             <div className="flex-1 lg:pl-8 space-y-6">
               <span className="text-[#ff4571] font-semibold">About</span>
               <h2 className="text-4xl font-bold">Simplifying Transcripts for Creators and Professionals</h2>
-              <p className={`${
+              <p className={${
                 theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-              } text-lg leading-relaxed`}>
+              } text-lg leading-relaxed}>
                 We believe content should be easy to access, repurpose, and share. That's why we created a simple, reliable tool to convert YouTube videos into transcripts — free and hassle-free.
               </p>
               <div className="grid grid-cols-2 gap-8">
                 <div>
                   <div className="text-3xl font-bold mb-2">100K+</div>
-                  <p className={`${
+                  <p className={${
                     theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                  }`}>Active Users</p>
+                  }}>Active Users</p>
                 </div>
                 <div>
                   <div className="text-3xl font-bold mb-2">2M+</div>
-                  <p className={`${
+                  <p className={${
                     theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                  }`}>Transcripts Generated</p>
+                  }}>Transcripts Generated</p>
                 </div>
               </div>
             </div>
@@ -703,16 +700,16 @@ const transcriptData = await response.json();
         </div>
 
         {/* FAQ Section */}
-        <div className={`${
+        <div className={${
           theme === 'light' ? 'bg-gray-50' : 'bg-white/5'
         } border-y ${
           theme === 'light' ? 'border-gray-100' : 'border-white/10'
-        }`}>
+        }}>
           <div className="max-w-7xl mx-auto px-4 py-20">
             <h2 className="text-4xl font-bold text-center mb-4">Frequently Asked Questions</h2>
-            <p className={`text-center mb-16 max-w-2xl mx-auto ${
+            <p className={text-center mb-16 max-w-2xl mx-auto ${
               theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-            }`}>
+            }}>
               Get answers to common questions about our YouTube transcript tool
             </p>
 
@@ -720,25 +717,25 @@ const transcriptData = await response.json();
               {faqItems.map((item, index) => (
                 <div 
                   key={index}
-                  className={`${
+                  className={${
                     theme === 'light'
                       ? 'bg-white'
                       : 'bg-white/5'
                   } rounded-xl backdrop-blur-sm border ${
                     theme === 'light' ? 'border-gray-100' : 'border-white/10'
-                  } overflow-hidden`}
+                  } overflow-hidden}
                 >
                   <button
                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
                     className="w-full px-6 py-4 text-left flex justify-between items-center"
                   >
                     <span className="font-medium">{item.question}</span>
-                    <ChevronDown className={`w-5 h-5 transition-transform ${expandedFaq === index ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={w-5 h-5 transition-transform ${expandedFaq === index ? 'rotate-180' : ''}} />
                   </button>
                   {expandedFaq === index && (
-                    <div className={`px-6 pb-4 ${
+                    <div className={px-6 pb-4 ${
                       theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                    }`}>
+                    }}>
                       {item.answer}
                     </div>
                   )}
