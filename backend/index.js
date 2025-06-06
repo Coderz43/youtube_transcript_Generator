@@ -1,38 +1,39 @@
 import express from 'express';
 import cors from 'cors';
-import pkg from 'youtube-transcript';
+import axios from 'axios';
+import * as dotenv from 'dotenv';
 
-const { getTranscript } = pkg;
+dotenv.config();
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
-app.get('/api/transcript', async (req, res) => {
-  const videoId = req.query.videoId;
+app.post('/api/transcript', async (req, res) => {
+  const { audioUrl } = req.body;
 
-  if (!videoId || typeof videoId !== 'string') {
-    return res.status(400).json({ error: 'Missing or invalid videoId' });
-  }
+  if (!audioUrl) return res.status(400).json({ error: 'Missing audioUrl' });
 
   try {
-    const transcript = await getTranscript(videoId);
+    const response = await axios.post(
+      'https://api.gladia.io/audio/text/audio-transcription/',
+      { audio_url: audioUrl },
+      {
+        headers: {
+          'x-gladia-key': process.env.GLADIA_API_KEY,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    if (!Array.isArray(transcript)) {
-      console.warn('⚠️ Invalid transcript format:', transcript);
-      return res.status(200).json([]); // always return JSON
-    }
-
-    res.status(200).json(transcript);
+    res.json(response.data);
   } catch (err) {
-    console.error('❌ getTranscript failed:', err.message);
-    // prevent crashing backend
-    res.status(200).json([]);
+    console.error('Gladia API Error:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Gladia API failed', details: err.message });
   }
 });
-
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`✅ Backend running at http://localhost:${PORT}`);
+  console.log(`✅ Gladia backend running on port ${PORT}`);
 });
-
