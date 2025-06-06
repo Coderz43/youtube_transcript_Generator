@@ -13,16 +13,12 @@ app.use(express.json());
 app.post('/api/transcript', async (req, res) => {
   const { audioUrl } = req.body;
 
-  if (!audioUrl) {
-    return res.status(400).json({ error: 'Missing audioUrl' });
-  }
+  if (!audioUrl) return res.status(400).json({ error: 'Missing audioUrl' });
 
   try {
     const response = await axios.post(
       'https://api.gladia.io/audio/text/audio-transcription/',
-      {
-        audio_url: audioUrl
-      },
+      { audio_url: audioUrl },
       {
         headers: {
           'x-gladia-key': process.env.GLADIA_API_KEY,
@@ -31,18 +27,16 @@ app.post('/api/transcript', async (req, res) => {
       }
     );
 
-    // Optional: structure output to match your frontend expectations
-    res.status(200).json(response.data);
-  } catch (err) {
-    console.error('❌ Gladia API Error:', err.response?.data || err.message);
-    res.status(500).json({
-      error: 'Gladia API failed',
-      details: err.response?.data || err.message
-    });
-  }
-});
+    // ✅ Double-check this is JSON before returning
+    if (typeof response.data !== 'object') {
+      return res.status(500).json({ error: 'Invalid Gladia response format' });
+    }
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✅ Gladia backend running on port ${PORT}`);
+    res.json(response.data);
+  } catch (err) {
+    console.error('Gladia API Error:', err.response?.data || err.message);
+
+    // ✅ Always return a JSON object, even in error
+    res.status(500).json({ error: 'Gladia API failed', details: err.message });
+  }
 });
